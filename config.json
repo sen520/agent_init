@@ -1,6 +1,6 @@
 {
   "model_url": "http://192.168.153.1:5050",
   "model_name": "qwen/qwen3-8b",
-  "emb": "Qwen3-Embedding-8B",
+  "emb": "bge-small-zh-v1.5",
   "emb_url": "http://127.0.0.1:5000"
 }

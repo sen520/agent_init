@@ -24,7 +24,7 @@ load_dotenv()
 load_config()
 
 llm = CustomModel(model_name=os.environ.get("model_name"), api_url=os.environ.get("model_url"))
-embeddings = CustomEmbedding(model_name=os.environ.get('emb'), api_url=os.environ.get('emb_url'))
+embeddings = CustomEmbedding(model_name=os.environ.get('emb'), api_url=os.environ.get('emb_url'), use_local=False)
 # 初始化数据库连接器
 db = SQLitePriceDB()
 
@@ -375,6 +375,9 @@ workflow.add_edge("generate_answer", END)
 
 # 编译图
 app = workflow.compile()
+pic = app.get_graph().draw_mermaid_png()
+with open('init.png', 'wb') as f:
+    f.write(pic)
 
 
 # 交互式对话函数
@@ -446,4 +449,4 @@ if __name__ == "__main__":
     # chat()
 
     # 运行批量测试
-    batch_test()
+    # batch_test()
