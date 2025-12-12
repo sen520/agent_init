@@ -67,4 +67,4 @@ def generate_long_log():
 if __name__ == "__main__":
     logger = create_logger()
     generate_long_log()
-    # logger.success("Test completed")
+    logger.success("Test completed")
