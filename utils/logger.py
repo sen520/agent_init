@@ -1,5 +1,7 @@
 import os
 import sys
+import traceback
+
 from loguru import logger
 
 
@@ -55,10 +57,11 @@ def generate_long_log():
     """生成超长日志的测试函数"""
     logger.info("Start transaction: T-001")
     logger.debug("Data payload: " + "x" * 1000)  # 1000字符的超长日志
-    # try:
-    #     1 / 0
-    # except Exception:
-    #     logger.exception("Calculation failed")
+    try:
+        1 / 0
+    except Exception:
+        logger.error(traceback.format_exc())
+        logger.exception("Calculation failed")
 
 
 if __name__ == "__main__":
