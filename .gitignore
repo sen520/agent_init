@@ -1,4 +1,4 @@
 .venv
 .idea
 price_database.db
-models
+models/*
