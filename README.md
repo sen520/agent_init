@@ -16,6 +16,11 @@ langgraph图调用简单原型
   - converted 放置转化结果
   - files 待转化的文件
   - tmp office转pdf的结果
+  - chunk chunk分割
+    - 基于Token Size的分割  
+    - 基于Markdown递归分割 
+    - 基于语义的分割结果
+  - convert mineru转化
 - convert 各种文档转markdown, 暂支持 pdf, office, png等图片, zip
 
 todo
