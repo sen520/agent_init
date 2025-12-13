@@ -16,7 +16,7 @@ langgraph图调用简单原型
   - converted 放置转化结果
   - files 待转化的文件
   - tmp office转pdf的结果
-- convert 各种文档转markdown, 暂支持 pdf, office, png等图片
+- convert 各种文档转markdown, 暂支持 pdf, office, png等图片, zip
 
 todo
 - prompt抽出单个文件
