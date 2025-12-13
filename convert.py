@@ -10,13 +10,14 @@ from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
 from utils.logger import create_logger
 from utils.office_to_pdf import convert_file_to_pdf
 from knowledge.convert import parse_doc
+from utils.utils import unzip_file
 
 load_dotenv()
 
 pdf_suffixes = ['.pdf']
 office_suffixes = ['.ppt', '.pptx', '.doc', '.docx', 'xls', 'xlsx']
 image_suffixes = ['.png', '.jpeg', '.jpg']
-compress = ['.zip', '.rar']
+compress = ['.zip']
 logger = create_logger()
 
 
@@ -29,29 +30,46 @@ def parse(pdf_files_dir, output_dir):
     print(result)
 
 
-def main():
-    need_convert = 'knowledge/files'
+def run(whole_dir):
     output_dir = 'knowledge/converted'
     tmp_dir = 'knowledge/tmp'
+    file = os.path.basename(whole_dir)
+    suffix = Path(whole_dir).suffix
+    print(whole_dir)
+    if suffix in pdf_suffixes + image_suffixes:
+        md = parse_doc([Path(whole_dir)], output_dir=output_dir, backend="pipeline")
+    elif suffix in office_suffixes:
+        new_file_name = os.path.join(tmp_dir, file.replace(suffix, '.pdf'))
+        if platform.system() == 'Windows':
+            doc = Document()
+            doc.LoadFromFile(whole_dir)
+            doc.SaveToFile(new_file_name, FileFormat.PDF)
+        else:
+            convert_file_to_pdf(whole_dir, tmp_dir)
+        md = parse_doc([Path(new_file_name)], output_dir, backend="pipeline")
+    elif suffix in compress:
+        unzip_dir = os.path.join(tmp_dir, file.replace(suffix, ''))
+        unzip_file(whole_dir, unzip_dir)
+        md = []
+        for zip_file in os.listdir(unzip_dir):
+            whole_zip = os.path.join(unzip_dir, zip_file)
+            single_zip = run(whole_zip)
+            md.extend(single_zip)
+
+    else:
+        md = []
+        logger.error(
+            f'Suffixes Error {suffix}. Only support {pdf_suffixes + image_suffixes + office_suffixes + compress}')
+    return md
+
+
+def main():
+    need_convert = 'knowledge/files'
     for file in os.listdir(need_convert):
         whole_dir = os.path.join(need_convert, file)
-        suffix = Path(whole_dir).suffix
-        if suffix in pdf_suffixes + image_suffixes:
-            md = parse_doc([Path(whole_dir)], output_dir=output_dir, backend="pipeline")
-        elif suffix in office_suffixes:
-            new_file_name = os.path.join(tmp_dir, file.replace(suffix, '.pdf'))
-            if platform.system() == 'Windows':
-                doc = Document()
-                doc.LoadFromFile(whole_dir)
-                doc.SaveToFile(new_file_name, FileFormat.PDF)
-            else:
-                convert_file_to_pdf(whole_dir, tmp_dir)
-            md = parse_doc([Path(new_file_name)], output_dir, backend="pipeline")
-        elif suffix in compress:
-            pass
-        else:
-            logger.error(f'Suffixes Error {suffix}. Only support {pdf_suffixes + image_suffixes + office_suffixes + compress}')
-        logger.debug(md)
+        data = run(whole_dir)
+        print(data)
+
 
 if __name__ == '__main__':
     os.environ['MINERU_MODEL_SOURCE'] = "modelscope"
