@@ -12,6 +12,11 @@ langgraph图调用简单原型
     - CustomModel  langgraph自定义模型服务
     - CustomEmbedding langgraph自定义embedding模型服务
   - logger
+- knowledge
+  - converted 放置转化结果
+  - files 待转化的文件
+  - tmp office转pdf的结果
+- convert 各种文档转markdown, 暂支持 pdf, office, png等图片
 
 todo
 - prompt抽出单个文件
@@ -23,5 +28,32 @@ todo
   - graph/ 图定义，组装节点
   - script/ 执行
   - logs/ 日志
+  - knowledge/ 知识库处理
 
   
+
+## mineru安装
+参考 https://github.com/opendatalab/MinerU
+
+
+pip install uv -i https://mirrors.aliyun.com/pypi/simple
+uv pip install -U "mineru[core]" -i https://mirrors.aliyun.com/pypi/simple 
+
+配置torch
+
+- pip uninstall pytorch
+- pip uninstall torchvision
+- pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+
+模型下载位置 C:\Users\admin\.cache\modelscope
+
+mineru.exe -p '.\0. 树莓派5新手入门手册.pdf' -o . --source modelscope
+
+支持文件
+```python
+pdf_suffixes = ['.pdf']
+office_suffixes = ['.ppt', '.pptx', '.doc', '.docx', 'xls', 'xlsx'] # 需要安装libreoffice【win, linux】, doc.spire【win】
+image_suffixes = ['.png', '.jpeg', '.jpg']
+compress = ['.zip', '.rar']
+
+```

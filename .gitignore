@@ -2,3 +2,6 @@
 .idea
 price_database.db
 models/*
+knowledge/tmp
+knowledge/converted
+logs/*
