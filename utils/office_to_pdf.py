@@ -113,3 +113,7 @@ def convert_file_to_pdf(input_path, output_dir):
 
     if process.returncode != 0:
         raise ConvertToPdfError(f"LibreOffice convert failed: {process.stderr.decode()}")
+
+
+if __name__ == '__main__':
+    convert_file_to_pdf('./test.docx', '.')

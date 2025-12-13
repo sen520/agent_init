@@ -40,12 +40,14 @@ def run(whole_dir):
         md = parse_doc([Path(whole_dir)], output_dir=output_dir, backend="pipeline")
     elif suffix in office_suffixes:
         new_file_name = os.path.join(tmp_dir, file.replace(suffix, '.pdf'))
-        if platform.system() == 'Windows':
-            doc = Document()
-            doc.LoadFromFile(whole_dir)
-            doc.SaveToFile(new_file_name, FileFormat.PDF)
-        else:
-            convert_file_to_pdf(whole_dir, tmp_dir)
+        # 转化的两种方式
+        # 1. spire 需要用会员
+        # doc = Document()
+        # doc.LoadFromFile(whole_dir)
+        # doc.SaveToFile(new_file_name, FileFormat.PDF)
+
+        # 2.libreoffice需要安装libreoffice
+        convert_file_to_pdf(whole_dir, tmp_dir)
         md = parse_doc([Path(new_file_name)], output_dir, backend="pipeline")
     elif suffix in compress:
         unzip_dir = os.path.join(tmp_dir, file.replace(suffix, ''))
