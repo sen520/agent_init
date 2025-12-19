@@ -4,7 +4,7 @@ langgraph图调用简单原型
 
 已完成：
   日志配置：日志打印定长，显示全部以及其他配置
-  知识库解析成md, chunk切分
+  知识库解析成md, chunk切分, chunk提取qa
 
 文件：
 - emb_start 手动拉起一个小模型服务

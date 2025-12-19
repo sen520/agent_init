@@ -1,5 +1,6 @@
 import zipfile
 import os
+from loguru import logger
 
 
 def unzip_file(zip_path, extract_dir):
@@ -16,7 +17,7 @@ def unzip_file(zip_path, extract_dir):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         # 解压所有文件
         zip_ref.extractall(extract_dir)
-        print(f"ZIP 文件已解压到: {extract_dir}")
+        logger.warning(f"ZIP 文件已解压到: {extract_dir}")
 
 if __name__ == '__main__':
 
