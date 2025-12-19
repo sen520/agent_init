@@ -109,6 +109,10 @@ def main():
         all_qa_list.append({'file_name': file_name, 'qa_list': qa_list})
     print(all_qa_list)
 
+    # embedding
+
+    # 知识库
+
 
 if __name__ == '__main__':
     os.environ['MINERU_MODEL_SOURCE'] = "modelscope"

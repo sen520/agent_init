@@ -21,8 +21,8 @@ langgraph图调用简单原型
     - 基于Token Size的分割  
     - 基于Markdown递归分割 
     - 基于语义的分割结果
-  - convert mineru转化
-- convert 各种文档转markdown, 暂支持 pdf, office, png等图片, zip
+  - convert mineru转化 各种文档转markdown, 暂支持 pdf, office, png等图片, zip
+- knowledge.py 知识库处理，文档转md -> chunk切分 -> qa提取 -> embedding -> 入库
 
 todo
 - prompt抽出单个文件
