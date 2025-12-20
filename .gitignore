@@ -5,3 +5,5 @@ models/*
 knowledge/tmp
 knowledge/converted
 logs/*
+main.db
+test.py
