@@ -25,7 +25,11 @@ langgraph图调用简单原型
 - knowledge.py 知识库处理，文档转md -> chunk切分 -> qa提取 -> embedding -> 入库 -> 向量库查询
 
 todo
-- prompt抽出单个文件
+- 基于langgraph的代码优化助手
+  - 上下文管理，压缩，相关度
+  - 工作流
+  - sql工具使用
+  - 知识库rerank
 - 模块分离
   - config/ 配置
   - state/ state结构，schema
