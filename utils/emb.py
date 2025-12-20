@@ -36,16 +36,6 @@ def get_qdrant_client() -> QdrantClient:
         grpc_options=grpc_options,
     )
 
-    # 验证连接
-    try:
-        client.get_collection(collection_name="test")
-        print("Qdrant客户端连接成功！")
-    except ApiException as e:
-        client.create_collection(
-            collection_name="test",
-            vectors_config=VectorParams(size=512, distance=Distance.COSINE),
-        )
-
     return client
 
 

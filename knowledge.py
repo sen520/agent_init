@@ -12,6 +12,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
 from transformers import AutoTokenizer
+from qdrant_client.models import VectorParams, Distance, PointStruct
 
 from utils.emb import get_qdrant_client
 from knowledge.chunk import split_by_markdown_recursive
@@ -168,13 +169,23 @@ def main():
         vector=vector,
         payload={"chunk": lines[0]['chunk']}
     )
+    collection_name = 'test'
+    exists = client.collection_exists(collection_name)
+    if not exists:
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=VectorParams(size=512, distance=Distance.COSINE),
+        )
 
-    client.upsert(collection_name='test', wait=True, points=[point])
+    client.upsert(collection_name=collection_name, wait=True, points=[point])
 
     result = client.retrieve(collection_name="test", ids=[1])
     for p in result:
         print(f"ID: {p.id}, Payload: {p.payload}, Vector: {p.vector}")
 
+    result = client.query_points(collection_name=collection_name, query=vector)
+    for p in result.points:
+        print(f"ID: {p.id}, Payload: {p.payload}, Vector: {p.vector}")
 
 if __name__ == '__main__':
     os.environ['MINERU_MODEL_SOURCE'] = "modelscope"
