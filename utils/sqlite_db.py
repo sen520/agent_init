@@ -2,8 +2,8 @@ import sqlite3
 from typing import List, Any, Dict
 
 
-class SQLitePriceDB:
-    def __init__(self, db_path: str = "./price_database.db"):
+class SQLiteDB:
+    def __init__(self, db_path: str = "./database.db"):
         """初始化SQLite数据库"""
         self.db_path = db_path
 
@@ -53,4 +53,4 @@ class SQLitePriceDB:
             return f"操作成功，影响行数: {affected_rows}"
 
         except sqlite3.Error as e:
-            return f"SQL错误: {str(e)}"
+            raise e

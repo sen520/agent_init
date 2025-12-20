@@ -62,7 +62,7 @@ def do_parse(
             pdf_info = middle_json["pdf_info"]
 
             pdf_bytes = pdf_bytes_list[idx]
-            md_result = _process_output(
+            md_result, _ = _process_output(
                 pdf_info, pdf_bytes, pdf_file_name, local_md_dir, local_image_dir,
                 md_writer, f_draw_layout_bbox, f_draw_span_bbox, f_dump_orig_pdf,
                 f_dump_md, f_dump_content_list, f_dump_middle_json, f_dump_model_output,
@@ -84,7 +84,7 @@ def do_parse(
 
             pdf_info = middle_json["pdf_info"]
 
-            md_result = _process_output(
+            md_result, _ = _process_output(
                 pdf_info, pdf_bytes, pdf_file_name, local_md_dir, local_image_dir,
                 md_writer, f_draw_layout_bbox, f_draw_span_bbox, f_dump_orig_pdf,
                 f_dump_md, f_dump_content_list, f_dump_middle_json, f_dump_model_output,
@@ -153,7 +153,7 @@ def _process_output(
         md_content_str,
     )
 
-    return {'md': md_content_str, 'images': image_dir}
+    return md_content_str, image_dir
 
 
 def parse_doc(

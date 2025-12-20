@@ -1,20 +1,28 @@
 import os
+import json
 import torch
 import torchvision
+from qdrant_client.grpc import PointId, Vector, Vectors
+from qdrant_client.models import PointStruct
 from sentence_transformers import SentenceTransformer
 from spire.doc import Document, FileFormat
 import platform
+from tqdm import tqdm
 from pathlib import Path
 from dotenv import load_dotenv
 from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
 from transformers import AutoTokenizer
 
+from utils.emb import get_qdrant_client
 from knowledge.chunk import split_by_markdown_recursive
 from knowledge.question import make_question
 from utils.logger import create_logger
 from utils.office_to_pdf import convert_file_to_pdf
 from knowledge.convert import parse_doc
+from knowledge.static import *
 from utils.utils import unzip_file
+from utils.sqlite_db import SQLiteDB
+from utils.customModel import CustomEmbedding
 
 load_dotenv()
 
@@ -69,49 +77,98 @@ def run(whole_dir):
     return md
 
 
-def split_chunk(md_list, model_name):
+def split_chunk(model_name, sql):
+    md_list = sql.execute_query('select * from knowledge_content')
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    data = []
+    chunks = []
     for md_obj in md_list:
-        file_name = md_obj['file']
-        chunks = []
-        for text in md_obj['data']:
-            chunks.extend(split_by_markdown_recursive(text['md'], tokenizer, chunk_size=512))
-        data.append({'file_name': file_name, 'chunks': chunks})
-    return data
+        chunks = split_by_markdown_recursive(md_obj['content'], tokenizer, chunk_size=512)
+        for chunk in chunks:
+            if len(chunk) < 50:
+                continue
+            sql.execute_update(f'insert into {knowledge_chunk}  (content_id, chunk) values (?, ?)',
+                               (md_obj['id'], chunk))
+    return chunks
+
+
+def init_db(sql):
+    tables = sql.execute_query('''SELECT name 
+FROM sqlite_master 
+WHERE type = 'table' 
+  AND name NOT LIKE 'sqlite_%';''')
+    table_names = [i['name'] for i in tables]
+    if 'knowledge_content' not in table_names:
+        sql.execute_update(create_content_db)
+    if 'knowledge_chunk' not in table_names:
+        sql.execute_update(create_chunk_db)
+    if 'knowledge_question' not in table_names:
+        sql.execute_update(create_question_db)
+
+
+def make_qa(sql):
+    chunk_objs = sql.execute_query(f'select * from {knowledge_chunk}')
+    for chunk_obj in chunk_objs:
+        qustion = make_question(chunk_obj['chunk'])
+        for q in qustion:
+            sql.execute_update(f'insert into {knowledge_question}  (chunk_id, question, answer) values (?, ?, ?)',
+                               (chunk_obj['id'], q['question'], q['answer']))
+
+
+def embedding(sql):
+    chunk_objs = sql.execute_query(f'select * from {knowledge_chunk}')
+    embedding_model = CustomEmbedding(model_name='Qwen3-Embedding-8B', use_local=False, api_url='http://127.0.0.1:5000')
+    logger.debug('emb chunk')
+    for chunk_obj in tqdm(chunk_objs, total=len(chunk_objs)):
+        emb = embedding_model.embed_query(chunk_obj['chunk'])
+        sql.execute_update(f'update {knowledge_chunk} set chunk_vector = ? where id = ?',
+                           (json.dumps(emb), chunk_obj['id']))
+
+    logger.debug('emb question')
+    question_objs = sql.execute_query(f'select * from {knowledge_question}')
+    for question_obj in tqdm(question_objs, total=len(question_objs)):
+        emb = embedding_model.embed_query(question_obj['question'])
+        sql.execute_update(f'update {knowledge_question} set question_vector = ? where id = ?',
+                           (json.dumps(emb), question_obj['id']))
 
 
 def main():
     need_convert = 'knowledge/files'
     model_name = "./models/bge-small-zh-v1.5"
-    md_list = []
+
+    db = 'main.db'
+    sql = SQLiteDB(db)
+    init_db(sql)
 
     # 1.file 转 md
     for file in os.listdir(need_convert):
         whole_dir = os.path.join(need_convert, file)
         data = run(whole_dir)
+        content = '\n'.join(data).strip()
         logger.debug(f'{file=} {data=}')
-        md_list.append({'file': file, 'data': data})
+        if content:
+            sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)', (file, '\n'.join(data)))
 
     # 2. md切分chunk
-    chunks = split_chunk(md_list, model_name)
+    split_chunk(model_name, sql)
 
-    all_qa_list = []  # [{'file_name': '', 'qa_list': [{'question': '', 'answer': ''}]}]
     # 3. 提取qa
-    for chunk_obj in chunks:
-        file_name = chunk_obj['file_name']
-        qa_list = []
-        for chunk in chunk_obj['chunks']:
-            if len(chunk) < 50: continue
-            qustion = make_question(chunk)
-            qa_list.extend(qustion)
-            break
-        all_qa_list.append({'file_name': file_name, 'qa_list': qa_list})
-    print(all_qa_list)
+    make_qa(sql)
 
-    # embedding
+    # 4. embedding
+    embedding(sql)
 
-    # 知识库
+    # 5. 知识库
+    lines = sql.execute_query(f'select * from {knowledge_chunk} limit 1')
+    client = get_qdrant_client()
+
+    vector = json.loads(lines[0]['chunk_vector'])
+    point = PointStruct(
+        id=lines[0]['id'],
+        vector=vector,
+        payload={"chunk": lines[0]['chunk']}
+    )
+
+    client.upsert(collection_name='test', wait=True, points=[point])
 
 
 if __name__ == '__main__':

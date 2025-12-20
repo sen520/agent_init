@@ -60,9 +60,10 @@ def make_question(chunk):
     logger.debug(question_text)
     data = []
     for lines in question_text.split('\n\n'):
-        question = re.search(r'Q\d+: (\w+)', lines).group(1)
-        answer = re.search(r'A\d+: (.*)', lines).group(1)
-        data.append({'question': question, 'answer': answer})
+        if re.search(r'Q\d+: (\w+)', lines) and re.search(r'A\d+: (.*)', lines):
+            question = re.search(r'Q\d+: (\w+)', lines).group(1)
+            answer = re.search(r'A\d+: (.*)', lines).group(1)
+            data.append({'question': question, 'answer': answer})
     return data
 
 
