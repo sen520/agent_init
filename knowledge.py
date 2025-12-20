@@ -24,6 +24,7 @@ from knowledge.static import *
 from utils.utils import unzip_file
 from utils.sqlite_db import SQLiteDB
 from utils.customModel import CustomEmbedding
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 load_dotenv()
 
@@ -108,8 +109,10 @@ WHERE type = 'table'
 
 def make_qa(sql):
     chunk_objs = sql.execute_query(f'select * from {knowledge_chunk}')
+    env = Environment(loader=FileSystemLoader('prompt'))
+    prompt = env.get_template('qa.md')
     for chunk_obj in chunk_objs:
-        qustion = make_question(chunk_obj['chunk'])
+        qustion = make_question(chunk_obj['chunk'], prompt)
         for q in qustion:
             sql.execute_update(f'insert into {knowledge_question}  (chunk_id, question, answer) values (?, ?, ?)',
                                (chunk_obj['id'], q['question'], q['answer']))
