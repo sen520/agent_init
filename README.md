@@ -63,3 +63,6 @@ image_suffixes = ['.png', '.jpeg', '.jpg']
 compress = ['.zip', '.rar']
 
 ```
+
+## 向量库
+docker run -p 6333:6333 -p 6334:6334 -v qdrant_storage:/qdrant/storage swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/reflyai/qdrant:v1.13.1
