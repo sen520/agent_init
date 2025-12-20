@@ -143,24 +143,24 @@ def main():
     sql = SQLiteDB(db)
     init_db(sql)
 
-    # # 1.file 转 md
-    # for file in os.listdir(need_convert):
-    #     whole_dir = os.path.join(need_convert, file)
-    #     data = run(whole_dir)
-    #     content = '\n'.join(data).strip()
-    #     logger.debug(f'{file=} {data=}')
-    #     if content:
-    #         sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)',
-    #                            (file, '\n'.join(data)))
-    #
-    # # 2. md切分chunk
-    # split_chunk(model_name, sql)
-    #
-    # # 3. 提取qa
-    # make_qa(sql)
-    #
-    # # 4. embedding
-    # embedding(sql)
+    # 1.file 转 md
+    for file in os.listdir(need_convert):
+        whole_dir = os.path.join(need_convert, file)
+        data = run(whole_dir)
+        content = '\n'.join(data).strip()
+        logger.debug(f'{file=} {data=}')
+        if content:
+            sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)',
+                               (file, '\n'.join(data)))
+
+    # 2. md切分chunk
+    split_chunk(model_name, sql)
+
+    # 3. 提取qa
+    make_qa(sql)
+
+    # 4. embedding
+    embedding(sql)
 
     # 5. 知识库
     lines = sql.execute_query(f'select * from {knowledge_chunk} limit 1')
