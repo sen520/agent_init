@@ -138,6 +138,8 @@ def main():
     db = 'main.db'
     sql = SQLiteDB(db)
     init_db(sql)
+    client = get_qdrant_client()
+
 
     # 1.file 转 md
     for file in os.listdir(need_convert):
@@ -159,7 +161,6 @@ def main():
 
     # 5. 知识库
     lines = sql.execute_query(f'select * from {knowledge_chunk} limit 1')
-    client = get_qdrant_client()
 
     vector = json.loads(lines[0]['chunk_vector'])
     point = PointStruct(
@@ -169,6 +170,10 @@ def main():
     )
 
     client.upsert(collection_name='test', wait=True, points=[point])
+
+    result = client.retrieve(collection_name="test", ids=[1])
+    for p in result:
+        print(f"ID: {p.id}, Payload: {p.payload}, Vector: {p.vector}")
 
 
 if __name__ == '__main__':
