@@ -13,6 +13,10 @@ langgraph图调用简单原型
     - CustomModel  langgraph自定义模型服务
     - CustomEmbedding langgraph自定义embedding模型服务
   - logger
+  - office_to_pdf 使用libreoffice将office文档转为pdf
+  - vector_db  向量库qdrantdb
+  - utils
+    - unzip_file 解压zip
 - knowledge
   - converted 放置转化结果
   - files 待转化的文件
@@ -69,4 +73,4 @@ compress = ['.zip', '.rar']
 ```
 
 ## 向量库
-docker run -p 6333:6333 -p 6334:6334 -v qdrant_storage:/qdrant/storage swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/reflyai/qdrant:v1.13.1
+docker run -p 6333:6333 -p 6334:6334 -v qdrant_storage:/qdrant/storage swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/qdrant/qdrant:v1.16.2

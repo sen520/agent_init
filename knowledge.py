@@ -14,7 +14,7 @@ from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
 from transformers import AutoTokenizer
 from qdrant_client.models import VectorParams, Distance, PointStruct
 
-from utils.emb import get_qdrant_client
+from utils.vector_db import QdrantVectorDB
 from knowledge.chunk import split_by_markdown_recursive
 from knowledge.question import make_question
 from utils.logger import create_logger
@@ -142,53 +142,46 @@ def main():
     db = 'main.db'
     sql = SQLiteDB(db)
     init_db(sql)
-    client = get_qdrant_client()
 
-    # 1.file 转 md
-    for file in os.listdir(need_convert):
-        whole_dir = os.path.join(need_convert, file)
-        data = run(whole_dir)
-        content = '\n'.join(data).strip()
-        logger.debug(f'{file=} {data=}')
-        if content:
-            sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)',
-                               (file, '\n'.join(data)))
-
-    # 2. md切分chunk
-    split_chunk(model_name, sql)
-
-    # 3. 提取qa
-    make_qa(sql)
-
-    # 4. embedding
-    embedding(sql)
+    # # 1.file 转 md
+    # for file in os.listdir(need_convert):
+    #     whole_dir = os.path.join(need_convert, file)
+    #     data = run(whole_dir)
+    #     content = '\n'.join(data).strip()
+    #     logger.debug(f'{file=} {data=}')
+    #     if content:
+    #         sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)',
+    #                            (file, '\n'.join(data)))
+    #
+    # # 2. md切分chunk
+    # split_chunk(model_name, sql)
+    #
+    # # 3. 提取qa
+    # make_qa(sql)
+    #
+    # # 4. embedding
+    # embedding(sql)
 
     # 5. 知识库
     lines = sql.execute_query(f'select * from {knowledge_chunk} limit 1')
 
     vector = json.loads(lines[0]['chunk_vector'])
-    point = PointStruct(
-        id=lines[0]['id'],
-        vector=vector,
-        payload={"chunk": lines[0]['chunk']}
-    )
     collection_name = 'test'
-    exists = client.collection_exists(collection_name)
-    if not exists:
-        client.create_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(size=512, distance=Distance.COSINE),
-        )
+    client = QdrantVectorDB(
+        host="localhost",
+        port=6333,
+        collection_name=collection_name,
+        vector_size=512,
+    )
+    client.add_vectors(vectors=[vector], ids=[lines[0]['id']], payloads=[{"chunk": lines[0]['chunk']}])
 
-    client.upsert(collection_name=collection_name, wait=True, points=[point])
-
-    result = client.retrieve(collection_name="test", ids=[1])
+    result = client.get_vector(vector_ids=[lines[0]['id']])
     for p in result:
-        print(f"ID: {p.id}, Payload: {p.payload}, Vector: {p.vector}")
+        print(f"ID: {p['id']}, Payload: {p['payload']}, Vector: {p['vector']}")
 
-    result = client.query_points(collection_name=collection_name, query=vector)
-    for p in result.points:
-        print(f"ID: {p.id}, Payload: {p.payload}, Vector: {p.vector}")
+    result = client.search_vectors(query_vector=vector)
+    for p in result:
+        print(f"ID: {p['id']}, Score: {p['score']}, Payload: {p['payload']}, Vector: {p['vector']}")
 
 
 if __name__ == '__main__':
