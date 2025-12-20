@@ -144,7 +144,6 @@ def main():
     init_db(sql)
     client = get_qdrant_client()
 
-
     # 1.file 转 md
     for file in os.listdir(need_convert):
         whole_dir = os.path.join(need_convert, file)
@@ -152,7 +151,8 @@ def main():
         content = '\n'.join(data).strip()
         logger.debug(f'{file=} {data=}')
         if content:
-            sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)', (file, '\n'.join(data)))
+            sql.execute_update(f'insert into {knowledge_content} (filename, content) values (?, ?)',
+                               (file, '\n'.join(data)))
 
     # 2. md切分chunk
     split_chunk(model_name, sql)
@@ -189,6 +189,7 @@ def main():
     result = client.query_points(collection_name=collection_name, query=vector)
     for p in result.points:
         print(f"ID: {p.id}, Payload: {p.payload}, Vector: {p.vector}")
+
 
 if __name__ == '__main__':
     os.environ['MINERU_MODEL_SOURCE'] = "modelscope"
