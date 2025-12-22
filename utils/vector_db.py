@@ -55,8 +55,6 @@ class QdrantVectorDB:
         # 检查并创建默认集合（如果不存在）
         self.create_collection_if_not_exists()
 
-    def client(self):
-        return self.client
 
     def create_collection_if_not_exists(self) -> bool:
         """
@@ -256,6 +254,7 @@ class QdrantVectorDB:
                 limit=top_k,
                 with_payload=with_payload,
                 search_params=search_params or SearchParams(hnsw_ef=100),
+                query_filter=query_filter
             )
 
             # 格式化结果
@@ -456,7 +455,7 @@ if __name__ == "__main__":
     print("搜索结果:", search_results)
 
     # 获取单个向量
-    vector_info = vector_db.get_vector(vector_id=0)
+    vector_info = vector_db.get_vector(vector_ids=[0])
     print("向量信息:", vector_info)
 
     # 更新向量元数据
