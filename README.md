@@ -8,25 +8,26 @@ langgraph图调用简单原型
 
 文件：
 - emb_start 手动拉起一个小模型服务
-- utils
-  - customModel
-    - CustomModel  langgraph自定义模型服务
-    - CustomEmbedding langgraph自定义embedding模型服务
-  - logger
-  - office_to_pdf 使用libreoffice将office文档转为pdf
-  - vector_db  向量库qdrantdb
+- src 代码路径
   - utils
-    - unzip_file 解压zip
-- knowledge
-  - converted 放置转化结果
-  - files 待转化的文件
-  - tmp office转pdf的结果
-  - chunk chunk分割
-    - 基于Token Size的分割  
-    - 基于Markdown递归分割 
-    - 基于语义的分割结果
-  - convert mineru转化 各种文档转markdown, 暂支持 pdf, office, png等图片, zip
-- knowledge.py 知识库处理，文档转md -> chunk切分 -> qa提取 -> embedding -> 入库 -> 向量库查询
+    - customModel
+      - CustomModel  langgraph自定义模型服务
+      - CustomEmbedding langgraph自定义embedding模型服务
+    - logger
+    - office_to_pdf 使用libreoffice将office文档转为pdf
+    - vector_db  向量库qdrantdb
+    - utils
+      - unzip_file 解压zip
+  - knowledge
+    - converted 放置转化结果
+    - files 待转化的文件
+    - tmp office转pdf的结果
+    - chunk chunk分割
+      - 基于Token Size的分割  
+      - 基于Markdown递归分割 
+      - 基于语义的分割结果
+    - convert mineru转化 各种文档转markdown, 暂支持 pdf, office, png等图片, zip
+  - knowledge.py 知识库处理，文档转md -> chunk切分 -> qa提取 -> embedding -> 入库 -> 向量库查询
 
 todo
 - 基于langgraph的代码优化助手
@@ -40,7 +41,6 @@ todo
   - tools/ 工具定义，工具初始化
   - nodes/ 节点定义
   - graph/ 图定义，组装节点
-  - script/ 执行
   - logs/ 日志
   - knowledge/ 知识库处理
 
