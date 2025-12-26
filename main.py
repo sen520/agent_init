@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 
 from src.utils.logger import create_logger
 from src.graph.base import build_graph
+from src.config.settings import settings
 
 load_dotenv()
 agent = build_graph()
