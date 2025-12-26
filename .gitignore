@@ -2,10 +2,10 @@
 .idea
 price_database.db
 models/*
-knowledge/tmp
-knowledge/converted
+src/knowledge/tmp
+src/knowledge/converted
 logs/*
 main.db
 test.py
 .langgraph_api
-knowledge/files
+src/knowledge/files

@@ -2,8 +2,8 @@ import re
 
 import requests
 from loguru import logger
-from jinja2 import Environment, FileSystemLoader, TemplateNotFound
-from utils.customModel import CustomModel
+from jinja2 import Environment, FileSystemLoader
+from src.utils.customModel import CustomModel
 
 api_url = 'http://192.168.153.1:5050'
 model_name = 'qwen/qwen3-8b'
@@ -41,7 +41,7 @@ def make_question(chunk, prompt):
 
 
 if __name__ == '__main__':
-    env = Environment(loader=FileSystemLoader('../prompt'))
+    env = Environment(loader=FileSystemLoader('../../prompt'))
     prompt = env.get_template('qa.md')
     text = make_question(r'''3.创建ROS工作空间
 

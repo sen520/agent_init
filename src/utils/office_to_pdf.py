@@ -116,4 +116,4 @@ def convert_file_to_pdf(input_path, output_dir):
 
 
 if __name__ == '__main__':
-    convert_file_to_pdf('./test.docx', '.')
+    convert_file_to_pdf('./test.docx', '')

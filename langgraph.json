@@ -3,7 +3,7 @@
     "."
   ],
   "graphs": {
-    "chat": "./test.py:graph"
+    "chat": "./main.py:agent"
   },
   "env": ".venv"
 }

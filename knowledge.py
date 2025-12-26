@@ -1,30 +1,23 @@
 import os
 import json
-import torch
-import torchvision
-from qdrant_client.grpc import PointId, Vector, Vectors
-from qdrant_client.models import PointStruct
-from sentence_transformers import SentenceTransformer
-from spire.doc import Document, FileFormat
-import platform
 from tqdm import tqdm
 from pathlib import Path
 from dotenv import load_dotenv
 from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
 from transformers import AutoTokenizer
-from qdrant_client.models import VectorParams, Distance, PointStruct
 
-from utils.vector_db import QdrantVectorDB
-from knowledge.chunk import split_by_markdown_recursive
-from knowledge.question import make_question
-from utils.logger import create_logger
-from utils.office_to_pdf import convert_file_to_pdf
-from knowledge.convert import parse_doc
-from knowledge.static import *
-from utils.utils import unzip_file
-from utils.sqlite_db import SQLiteDB
-from utils.customModel import CustomEmbedding
-from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from src.utils.vector_db import QdrantVectorDB
+from src.knowledge.chunk import split_by_markdown_recursive
+from src.knowledge.question import make_question
+from src.knowledge.static import *
+from src.knowledge.convert import parse_doc
+
+from src.utils.logger import create_logger
+from src.utils.office_to_pdf import convert_file_to_pdf
+from src.utils.utils import unzip_file
+from src.utils.sqlite_db import SQLiteDB
+from src.utils.customModel import CustomEmbedding
+from jinja2 import Environment, FileSystemLoader
 
 load_dotenv()
 
@@ -45,8 +38,8 @@ def parse(pdf_files_dir, output_dir):
 
 
 def run(whole_dir):
-    output_dir = 'knowledge/converted'
-    tmp_dir = 'knowledge/tmp'
+    output_dir = 'src/knowledge/converted'
+    tmp_dir = 'src/knowledge/tmp'
     file = os.path.basename(whole_dir)
     suffix = Path(whole_dir).suffix
     logger.debug(f'{whole_dir}')
@@ -136,7 +129,7 @@ def embedding(sql):
 
 
 def main():
-    need_convert = 'knowledge/files'
+    need_convert = 'src/knowledge/files'
     model_name = "./models/bge-small-zh-v1.5"
 
     db = 'main.db'
