@@ -83,7 +83,7 @@ docker run -p 6333:6333 -p 6334:6334 -v qdrant_storage:/qdrant/storage swr.cn-no
 
 #### 可视化
 ```shell
-docker run -d --name attu -p 8000:3000 -e MILVUS_URL={milvus server IP}:19530 zilliz/attu:latest
+docker run -d --name attu -p 8000:3000 -e MILVUS_URL=127.0.0.1:19530 zilliz/attu:latest
 
 ```
 
@@ -155,6 +155,17 @@ services:
       - "minio"
     networks:
       - milvus-tier
+
+  attu:
+    container_name: attu
+    image: zilliz/attu:latest
+    restart: always
+    ports:
+      - "8000:3000"
+    environment:
+      - MILVUS_URL=127.0.0.1:19530
+    networks:
+      - milvus-tier  # 需确保与Milvus在同一网络
 
 networks:
   milvus-tier:

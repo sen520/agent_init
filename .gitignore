@@ -9,3 +9,4 @@ main.db
 test.py
 .langgraph_api
 src/knowledge/files
+env/volumes
