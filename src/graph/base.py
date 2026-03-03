@@ -5,12 +5,24 @@ LangGraph工作流定义 - 代码优化助手的核心引擎
 from langgraph.graph import StateGraph, END
 
 # 导入节点函数
-from src.nodes.base import (
-    initialize_project,
-    analyze_code,
-    create_analysis_report,
-    end_optimization
-)
+try:
+    # 优先使用真实分析节点
+    from src.nodes.real import (
+        initialize_project,
+        analyze_code,
+        create_analysis_report,
+        end_optimization
+    )
+    REAL_NODES_AVAILABLE = True
+except ImportError as e:
+    print(f"真实分析节点不可用，使用模拟节点: {e}")
+    from src.nodes.base import (
+        initialize_project,
+        analyze_code,
+        create_analysis_report,
+        end_optimization
+    )
+    REAL_NODES_AVAILABLE = False
 
 # 导入优化节点
 try:
@@ -120,6 +132,14 @@ def build_self_optimizing_graph():
     builder.add_node("create_summary", create_optimization_summary)
     builder.add_node("end", end_optimization)
     
+    # 添加 HTML 报告生成节点（如果可用）
+    try:
+        from src.utils.report_generator import create_report_node
+        builder.add_node("generate_report", create_report_node)
+        has_report_node = True
+    except ImportError:
+        has_report_node = False
+    
     # 设置入口点
     builder.set_entry_point("initialize")
     
@@ -129,16 +149,27 @@ def build_self_optimizing_graph():
     builder.add_edge("apply_optimization", "analyze_results")
     
     # 条件边：循环优化直到满足条件
-    builder.add_conditional_edges(
-        "analyze_results",
-        lambda state: "continue" if state.should_continue and state.iteration_count < 2 else "end",
-        {
-            "continue": "analyze",         # 继续分析（可能发现新的优化点）
-            "end": "create_summary"        # 结束优化
-        }
-    )
-    
-    builder.add_edge("create_summary", "end")
+    if has_report_node:
+        builder.add_conditional_edges(
+            "analyze_results",
+            lambda state: "continue" if state.should_continue and state.iteration_count < 2 else "end",
+            {
+                "continue": "analyze",         # 继续分析（可能发现新的优化点）
+                "end": "create_summary"        # 结束优化
+            }
+        )
+        builder.add_edge("create_summary", "generate_report")
+        builder.add_edge("generate_report", "end")
+    else:
+        builder.add_conditional_edges(
+            "analyze_results",
+            lambda state: "continue" if state.should_continue and state.iteration_count < 2 else "end",
+            {
+                "continue": "analyze",         # 继续分析（可能发现新的优化点）
+                "end": "create_summary"        # 结束优化
+            }
+        )
+        builder.add_edge("create_summary", "end")
     
     # 设置结束点
     builder.set_finish_point("end")

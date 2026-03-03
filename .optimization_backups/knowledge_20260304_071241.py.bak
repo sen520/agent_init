@@ -1,23 +1,23 @@
-
-
-from dotenv import load_dotenv
-from jinja2 import Environment, FileSystemLoader
-from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
+import os
+import json
+from tqdm import tqdm
 from pathlib import Path
+from dotenv import load_dotenv
+from mineru.utils.guess_suffix_or_lang import guess_suffix_by_path
+from transformers import AutoTokenizer
+
+from src.utils.vector_db import QdrantVectorDB
 from src.knowledge.chunk import split_by_markdown_recursive
-from src.knowledge.convert import parse_doc
 from src.knowledge.question import make_question
 from src.knowledge.static import *
-from src.utils.customModel import CustomEmbedding
+from src.knowledge.convert import parse_doc
+
 from src.utils.logger import create_logger
 from src.utils.office_to_pdf import convert_file_to_pdf
-from src.utils.sqlite_db import SQLiteDB
 from src.utils.utils import unzip_file
-from src.utils.vector_db import QdrantVectorDB
-from tqdm import tqdm
-from transformers import AutoTokenizer
-import json
-import os
+from src.utils.sqlite_db import SQLiteDB
+from src.utils.customModel import CustomEmbedding
+from jinja2 import Environment, FileSystemLoader
 
 load_dotenv()
 

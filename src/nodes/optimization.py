@@ -13,13 +13,12 @@ from src.state.base import State, CodeAnalysis, ImplementationResult
 
 def apply_optimization(state: State) -> State:
     """
-    应用代码优化节点
-    
-    根据分析结果，应用相应的优化策略
+    应用代码优化节点 - 使用真实的文件修改
     """
     try:
         from src.strategies.optimization_strategies import CodeOptimizer, optimize_code_file
         from src.tools.file_scanner import FileScanner
+        from src.utils.file_modifier import FileModifier, apply_optimization_safely
     except ImportError as e:
         state.logs.append(f"导入优化模块失败: {e}")
         state.errors.append(f"优化模块导入错误: {e}")
@@ -35,26 +34,39 @@ def apply_optimization(state: State) -> State:
     
     state.logs.append("开始应用代码优化...")
     
+    # 创建文件修改器
+    modifier = FileModifier()
+    
     try:
         # 扫描需要优化的文件
         scanner = FileScanner(project_path)
         python_files = scanner.scan_python_files()
         
-        # 过滤出有问题的文件（基于之前的分析）
+        # 基于分析结果，找出有问题的文件
+        files_with_issues = set()
+        for issue in state.analysis.issues:
+            files_with_issues.add(issue.file_path)
+        
+        # 只优化有问题的文件
         files_to_optimize = []
-        for file_name in python_files[:10]:  # 限制数量，避免过多修改
-            file_path = os.path.join(project_path, file_name)
-            
-            # 跳过这些系统文件，避免破坏
-            skip_files = {'__init__.py', 'test_optimization.py', 'config.py'}
-            if any(file_name.endswith(sf) for sf in skip_files):
-                continue
+        for file_name in python_files[:15]:  # 限制数量
+            if file_name in files_with_issues:
+                file_path = os.path.join(project_path, file_name)
                 
-            files_to_optimize.append(file_path)
+                # 跳过敏感文件
+                skip_files = {'__init__.py', 'test_optimization.py', 'conftest.py'}
+                if any(sf in file_name for sf in skip_files):
+                    continue
+                    
+                files_to_optimize.append(file_path)
         
         if not files_to_optimize:
             state.logs.append("没有找到需要优化的文件")
+            state.stop_reason = "没有可优化的文件"
+            state.should_continue = False
             return state
+        
+        print(f"   🎯 确定 {len(files_to_optimize)} 个文件需要优化")
         
         # 创建优化器
         optimizer = CodeOptimizer()
@@ -63,65 +75,71 @@ def apply_optimization(state: State) -> State:
         
         # 对每个文件应用优化
         for file_path in files_to_optimize:
-            state.logs.append(f"优化文件: {os.path.basename(file_path)}")
+            file_name = os.path.basename(file_path)
+            state.logs.append(f"优化文件: {file_name}")
             
             try:
                 # 先分析文件
                 analysis = optimizer.analyze_file(file_path)
                 
                 if analysis.get('needs_optimization', False):
-                    # 选择优化策略 - 按优先级和安全程度排序
-                    # 1. 安全策略 (不容易破坏功能)
+                    # 选择优化策略 - 只使用安全的策略
                     strategies_to_apply = [
-                        'empty_line_optimizer',          # 空行规范化
-                        'comment_optimizer',             # 注释格式化  
-                        'import_optimizer',              # 导入组织
-                        'line_length_optimizer',         # 行长度优化
+                        'empty_line_optimizer',    # 空行规范化
+                        'comment_optimizer',       # 注释格式化
+                        'import_optimizer',        # 导入组织
                     ]
-                    # 2. 较安全策略 (添加建议标记)
-                    if len(files_to_optimize) <= 3:  # 限制文件数量时添加
-                        strategies_to_apply.extend([
-                            'variable_naming_optimizer',    # 变量命名建议
-                            'function_length_optimizer',    # 函数长度检测
-                            'duplicate_code_optimizer',     # 重复代码检测
-                        ])
                     
-                    # 应用优化
+                    # 应用优化（获取优化后的内容）
                     result = optimize_code_file(file_path, strategies_to_apply)
                     
-                    if result.get('optimization_applied'):
+                    if result.get('optimization_applied') and result.get('optimized_content'):
+                        optimized_content = result['optimized_content']
                         changes_count = result.get('changes_count', 0)
-                        total_changes += changes_count
                         
-                        # 创建实现结果记录
-                        impl = ImplementationResult(
-                            suggestion_id=str(uuid.uuid4()),
-                            implemented_at=datetime.now(),
-                            changed_files=[file_path],
-                            lines_added=changes_count,
-                            lines_removed=0,
-                            tests_passed=True,
-                            before_metrics={},
-                            after_metrics={
-                                "applied_strategies": result.get('strategies_applied', []),
-                                "file_issues_count": analysis.get('total_issues', 0),
-                                "changes": result.get('specific_changes', [])[:5]  # 只保留前5个变更
-                            }
-                        )
-                        applied_implementations.append(impl)
-                        
-                        # 添加到状态
-                        state.applied_changes.append(
-                            f"优化 {os.path.basename(file_path)}: {changes_count} 处变更"
+                        # 安全地写入文件
+                        apply_result = apply_optimization_safely(
+                            file_path, 
+                            optimized_content, 
+                            modifier
                         )
                         
-                        state.logs.append(f"✅ {os.path.basename(file_path)}: {changes_count} 处优化")
+                        if apply_result['success'] and apply_result['changes_applied']:
+                            total_changes += changes_count
+                            
+                            # 创建实现结果记录
+                            impl = ImplementationResult(
+                                suggestion_id=str(uuid.uuid4()),
+                                implemented_at=datetime.now(),
+                                changed_files=[file_path],
+                                lines_added=changes_count,
+                                lines_removed=0,
+                                tests_passed=True,
+                                before_metrics={},
+                                after_metrics={
+                                    "strategies_applied": result.get('strategies_applied', []),
+                                    "changes": result.get('specific_changes', [])[:5],
+                                    "backup_path": apply_result.get('backup_path')
+                                }
+                            )
+                            applied_implementations.append(impl)
+                            
+                            # 添加到状态
+                            state.applied_changes.append(
+                                f"优化 {file_name}: {changes_count} 处变更"
+                            )
+                            
+                            print(f"      ✅ {file_name}: {changes_count} 处优化已应用")
+                            state.logs.append(f"✅ {file_name}: {changes_count} 处优化")
+                        else:
+                            print(f"      ⚠️ {file_name}: {apply_result.get('message', '未应用')}")
                     else:
-                        state.logs.append(f"ℹ️ {os.path.basename(file_path)}: 无需优化")
+                        print(f"      ℹ️ {file_name}: 无需优化")
                 else:
-                    state.logs.append(f"ℹ️ {os.path.basename(file_path)}: 发现问题但无需优化")
+                    print(f"      ℹ️ {file_name}: 无需优化")
                     
             except Exception as e:
+                print(f"      ❌ {file_name}: 优化失败 - {e}")
                 error_impl = ImplementationResult(
                     suggestion_id=str(uuid.uuid4()),
                     implemented_at=datetime.now(),
@@ -133,27 +151,30 @@ def apply_optimization(state: State) -> State:
                     after_metrics={"error": str(e)}
                 )
                 applied_implementations.append(error_impl)
-                state.logs.append(f"❌ 优化 {os.path.basename(file_path)} 失败: {e}")
         
         # 更新状态
         if applied_implementations:
-            state.current_implementation = applied_implementations[-1]  # 最后一个实现
+            successful_impls = [
+                impl for impl in applied_implementations 
+                if impl.lines_added > 0
+            ]
+            if successful_impls:
+                state.current_implementation = successful_impls[-1]
             state.implementations.extend(applied_implementations)
         
-        state.logs.append(f"优化完成: 处理了 {len(files_to_optimize)} 个文件，应用了 {total_changes} 处变更")
+        state.logs.append(
+            f"优化完成: 处理了 {len(files_to_optimize)} 个文件，"
+            f"应用了 {total_changes} 处变更"
+        )
+        print(f"\n   📊 优化完成: {total_changes} 处变更已应用到 {len(modifier.modified_files)} 个文件")
         
-        # 更新分析中的问题数量（可能有些问题已被解决）
-        if state.analysis:
-            remaining_issues = max(0, len(state.analysis.issues) - total_changes)
-            # 创建新的analysis对象反映优化后的状态
-            state.analysis = CodeAnalysis(
-                total_files_analyzed=state.analysis.total_files_analyzed,
-                total_lines_of_code=state.analysis.total_lines_of_code,
-                average_complexity=max(10, state.analysis.average_complexity - total_changes * 2),
-                issues=[issue for i, issue in enumerate(state.analysis.issues) if i < remaining_issues]
-            )
+        # 如果没有任何变更，停止优化
+        if total_changes == 0:
+            state.should_continue = False
+            state.stop_reason = "没有可以应用的优化"
         
     except Exception as e:
+        print(f"   ❌ 优化过程出错: {e}")
         error_impl = ImplementationResult(
             suggestion_id=str(uuid.uuid4()),
             implemented_at=datetime.now(),
@@ -167,6 +188,10 @@ def apply_optimization(state: State) -> State:
         state.implementations.append(error_impl)
         state.errors.append(f"优化过程错误: {e}")
         state.logs.append(f"优化失败: {e}")
+        state.should_continue = False
+        state.stop_reason = f"优化失败: {e}"
+    
+    return state
     
     return state
 

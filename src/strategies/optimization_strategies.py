@@ -754,8 +754,15 @@ class CodeOptimizer:
         
         return file_analysis
     
-    def optimize_file(self, file_path: str, selected_strategies: Optional[List[str]] = None) -> Dict[str, Any]:
-        """优化文件"""
+    def optimize_file(self, file_path: str, selected_strategies: Optional[List[str]] = None, apply_changes: bool = False) -> Dict[str, Any]:
+        """
+        优化文件
+        
+        Args:
+            file_path: 目标文件路径
+            selected_strategies: 要应用的策略列表
+            apply_changes: 是否直接保存修改（默认为False，返回优化后的内容）
+        """
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -791,8 +798,20 @@ class CodeOptimizer:
                     "error": f"应用策略失败: {e}"
                 })
         
-        # 如果有优化，保存文件
-        if modified_content != content:
+        # 构建结果
+        result = {
+            "file_path": file_path,
+            "optimization_applied": modified_content != content,
+            "strategies_applied": [s.name for s in strategies_to_apply],
+            "changes_count": len(applied_changes),
+            "specific_changes": applied_changes,
+            "optimization_results": optimization_results,
+            "optimized_content": modified_content if modified_content != content else None,
+            "original_content": content
+        }
+        
+        # 如果要求直接保存
+        if apply_changes and modified_content != content:
             try:
                 # 创建备份
                 backup_path = file_path + '.backup'
@@ -803,24 +822,13 @@ class CodeOptimizer:
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.write(modified_content)
                 
-                success = True
+                result["backup_created"] = True
+                result["backup_path"] = backup_path
+                
             except Exception as e:
-                success = False
-                error = str(e)
-        else:
-            success = None
-            error = "没有需要优化的内容"
+                result["error"] = f"保存文件失败: {e}"
         
-        return {
-            "file_path": file_path,
-            "optimization_applied": success,
-            "backup_created": success if success else None,
-            "strategies_applied": [s.name for s in strategies_to_apply],
-            "changes_count": len(applied_changes),
-            "specific_changes": applied_changes,
-            "optimization_results": optimization_results,
-            "error": error if error is not None else None
-        }
+        return result
 
 
 # 便捷函数

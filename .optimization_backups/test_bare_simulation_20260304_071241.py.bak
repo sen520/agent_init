@@ -4,9 +4,7 @@
 """
 
 # 模拟 State
-
 class State:
-
     def __init__(self):
         self.project_path = ""
         self.current_file = None
@@ -37,7 +35,6 @@ class State:
 
 
 # 测试节点函数
-
 def initialize_project(state):
     print("🔄 [节点1] 初始化项目")
     state.project_path = "/root/.openclaw/workspace/code"
@@ -118,7 +115,6 @@ def end_optimization(state):
 
 
 # 模拟工作流
-
 def simulate_workflow():
     print("🤖 模拟自我优化工作流")
     print("=" * 50)
