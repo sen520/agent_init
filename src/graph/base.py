@@ -1,56 +1,214 @@
+#!/usr/bin/env python3
+"""
+LangGraph工作流定义 - 代码优化助手的核心引擎
+"""
 from langgraph.graph import StateGraph, END
+
+# 导入节点函数
+from src.nodes.base import (
+    initialize_project,
+    analyze_code,
+    create_analysis_report,
+    end_optimization
+)
+
+# 导入优化节点
+try:
+    from src.nodes.optimization import (
+        apply_optimization,
+        analyze_optimization_results,
+        create_optimization_summary
+    )
+    OPTIMIZATION_NODES_AVAILABLE = True
+except ImportError as e:
+    print(f"导入优化节点失败: {e}")
+    OPTIMIZATION_NODES_AVAILABLE = False
+
+# 导入状态管理
 from src.state.base import State
-from src.nodes.base import node1, node2
 
 
-# 定义条件分支（可选）
-def should_continue(state):
-    return "end" if "结束" in state["text"] else "node2"
-
-
-def build_graph():
-    # 构建图
-    workflow = StateGraph(State)
-    workflow.add_node("node1", node1)
-    workflow.add_node("node2", node2)
+def build_simple_graph():
+    """构建简单的测试图"""
+    # 创建状态图
+    builder = StateGraph(State)
+    
     # 添加节点
-    workflow.add_node("init_conversation", node1)
-    workflow.add_node("scan_codebase", node1)
-    workflow.add_node("summarize_analysis", node1)
-    workflow.add_node("reduce_context", node1)  # 上下文缩减节点
-    workflow.add_node("handle_user_input", node1)
+    builder.add_node("initialize", initialize_project)
+    builder.add_node("analyze", analyze_code)
+    builder.add_node("create_report", create_analysis_report)
+    builder.add_node("end", end_optimization)
+    
     # 设置入口点
-    workflow.set_entry_point("node1")
-
-    # 添加边：node1 → 条件分支 → node2 或 END
+    builder.set_entry_point("initialize")
+    
     # 添加边
-    workflow.set_entry_point("init_conversation")
-    workflow.add_edge("init_conversation", "scan_codebase")
-    workflow.add_edge("scan_codebase", "summarize_analysis")
+    builder.add_edge("initialize", "analyze")
+    builder.add_edge("analyze", "create_report")
+    builder.add_edge("create_report", "end")
+    
+    # 设置结束点
+    builder.set_finish_point("end")
+    
+    return builder.compile()
 
-    # 添加边：node2 → END
-    workflow.add_edge("node2", END)
-    # 条件边：总结后判断下一步
-    workflow.add_conditional_edges(
-        "summarize_analysis",
-        should_continue,
+
+def build_optimization_graph():
+    """构建完整的优化工作流"""
+    # 创建状态图
+    builder = StateGraph(State)
+    
+    # 添加基本节点
+    builder.add_node("initialize", initialize_project)
+    builder.add_node("analyze", analyze_code)
+    builder.add_node("create_report", create_analysis_report)
+    builder.add_node("end", end_optimization)
+    
+    if OPTIMIZATION_NODES_AVAILABLE:
+        # 添加优化节点
+        builder.add_node("apply_optimization", apply_optimization)
+        builder.add_node("analyze_results", analyze_optimization_results)
+        builder.add_node("create_summary", create_optimization_summary)
+        
+        # 设置入口点
+        builder.set_entry_point("initialize")
+        
+        # 添加边 - 完整优化流程
+        builder.add_edge("initialize", "analyze")
+        builder.add_edge("analyze", "apply_optimization")
+        builder.add_edge("apply_optimization", "analyze_results")
+        
+        # 条件边：根据是否继续决定下一步
+        builder.add_conditional_edges(
+            "analyze_results",
+            lambda state: "continue" if state.should_continue else "end",
+            {
+                "continue": "analyze",      # 继续下一次迭代
+                "end": "create_summary"     # 结束并生成总结
+            }
+        )
+        
+        builder.add_edge("create_summary", "end")
+    else:
+        # 如果优化节点不可用，使用简化流程
+        builder.set_entry_point("initialize")
+        builder.add_edge("initialize", "analyze")
+        builder.add_edge("analyze", "create_report")
+        builder.add_edge("create_report", "end")
+    
+    # 设置结束点
+    builder.set_finish_point("end")
+    
+    return builder.compile()
+
+
+def build_self_optimizing_graph():
+    """构建自优化图 - 让系统能够优化自己的代码"""
+    # 创建状态图
+    builder = StateGraph(State)
+    
+    # 添加节点
+    builder.add_node("initialize", initialize_project)
+    builder.add_node("analyze", analyze_code)
+    builder.add_node("apply_optimization", apply_optimization)
+    builder.add_node("analyze_results", analyze_optimization_results)
+    builder.add_node("create_summary", create_optimization_summary)
+    builder.add_node("end", end_optimization)
+    
+    # 设置入口点
+    builder.set_entry_point("initialize")
+    
+    # 自优化流程
+    builder.add_edge("initialize", "analyze")
+    builder.add_edge("analyze", "apply_optimization")
+    builder.add_edge("apply_optimization", "analyze_results")
+    
+    # 条件边：循环优化直到满足条件
+    builder.add_conditional_edges(
+        "analyze_results",
+        lambda state: "continue" if state.should_continue and state.iteration_count < 2 else "end",
         {
-            "reduce_context": "reduce_context",
-            "scan_codebase": "scan_codebase"
+            "continue": "analyze",         # 继续分析（可能发现新的优化点）
+            "end": "create_summary"        # 结束优化
         }
     )
+    
+    builder.add_edge("create_summary", "end")
+    
+    # 设置结束点
+    builder.set_finish_point("end")
+    
+    return builder.compile()
 
-    # 上下文缩减后处理用户输入
-    workflow.add_edge("reduce_context", "handle_user_input")
 
-    # 用户输入后循环或结束
-    workflow.add_conditional_edges(
-        "handle_user_input",
-        lambda s: "reduce_context" if s.get("user_input") else END,
-        {
-            "reduce_context": "reduce_context",
-            END: END
-        }
-    )
-    # 编译图
-    return workflow.compile()
+# 创建可用的图实例
+simple_app = build_simple_graph()
+if OPTIMIZATION_NODES_AVAILABLE:
+    optimization_app = build_optimization_graph()
+    self_optimizing_app = build_self_optimizing_graph()
+else:
+    optimization_app = simple_app
+    self_optimizing_app = simple_app
+
+
+if __name__ == "__main__":
+    """测试工作流"""
+    import asyncio
+    from src.state.base import State
+    
+    # 测试简单工作流
+    print("🧪 测试LangGraph工作流")
+    print("=" * 60)
+    
+    async def test_workflow(workflow_name, app, initial_state):
+        print(f"\n🔄 测试 {workflow_name}:")
+        try:
+            result_dict = await app.ainvoke(initial_state)
+            final_state = State(**result_dict)
+            
+            print(f"✅ {workflow_name} 完成")
+            print(f"   迭代次数: {final_state.iteration_count}")
+            print(f"   日志数量: {len(final_state.logs)}")
+            print(f"   错误数量: {len(final_state.errors)}")
+            
+            # 显示最后几条日志
+            if final_state.logs:
+                print("   最近日志:")
+                for log in final_state.logs[-3:]:
+                    print(f"     {log}")
+                    
+            return final_state
+            
+        except Exception as e:
+            print(f"❌ {workflow_name} 失败: {e}")
+            return None
+    
+    # 运行测试
+    async def run_tests():
+        initial_state = State(project_path=".")
+        
+        # 测试1: 简单工作流
+        result1 = await test_workflow("简单工作流", simple_app, initial_state)
+        
+        # 测试2: 优化工作流（如果可用）
+        if OPTIMIZATION_NODES_AVAILABLE:
+            initial_state2 = State(project_path=".")
+            result2 = await test_workflow("优化工作流", optimization_app, initial_state2)
+            
+            # 测试3: 自优化工作流
+            initial_state3 = State(project_path=".")
+            result3 = await test_workflow("自优化工作流", self_optimizing_app, initial_state3)
+        else:
+            print("⚠️ 优化节点不可用，跳过优化工作流测试")
+    
+    asyncio.run(run_tests())
+    
+    print("\n✅ 工作流测试完成")
+    print(f"📊 可用的工作流:")
+    print(f"   - 简单工作流 (�)")
+    if OPTIMIZATION_NODES_AVAILABLE:
+        print(f"   - 优化工作流 (�)")
+        print(f"   - 自优化工作流 (�)")
+    else:
+        print(f"   - 优化工作流 (❌ - 节点不可用)")
+        print(f"   - 自优化工作流 (❌ - 节点不可用)")

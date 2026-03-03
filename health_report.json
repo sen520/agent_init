@@ -1,0 +1,102 @@
+{
+  "timestamp": "2026-03-03T06:18:27.631683",
+  "working_directory": "/root/.openclaw/workspace/code",
+  "health_score": 66,
+  "stats": {
+    "passed": 10,
+    "warnings": 4,
+    "failed": 4
+  },
+  "checks": [
+    {
+      "description": "Python版本",
+      "path": "无法获取",
+      "result": "❌"
+    },
+    {
+      "description": "工作目录",
+      "path": "/root/.openclaw/workspace/code",
+      "result": "✅"
+    },
+    {
+      "description": "OpenClaw状态",
+      "path": "运行中",
+      "result": "✅"
+    },
+    {
+      "description": "项目说明",
+      "path": "README.md",
+      "result": "✅ (4501 bytes)"
+    },
+    {
+      "description": "主程序",
+      "path": "main.py",
+      "result": "✅ (2307 bytes)"
+    },
+    {
+      "description": "源代码目录",
+      "path": "src/",
+      "result": "✅ "
+    },
+    {
+      "description": "虚拟环境",
+      "path": "venv/",
+      "result": "✅ "
+    },
+    {
+      "description": "环境配置",
+      "path": ".env",
+      "result": "✅ (117 bytes)"
+    },
+    {
+      "description": "依赖文件",
+      "path": "requirement.txt",
+      "result": "✅ (8192 bytes)"
+    },
+    {
+      "description": "工作流框架",
+      "path": "langgraph",
+      "result": "❌ 未安装"
+    },
+    {
+      "description": "数据验证",
+      "path": "pydantic",
+      "result": "❌ 未安装"
+    },
+    {
+      "description": "环境变量",
+      "path": "dotenv",
+      "result": "❌ 未安装"
+    },
+    {
+      "description": "配置文件",
+      "path": "yaml",
+      "result": "✅"
+    },
+    {
+      "description": "虚拟环境",
+      "path": "venv/",
+      "result": "✅"
+    },
+    {
+      "description": "基本功能测试",
+      "path": "test_basic.py",
+      "result": "⚠️ 错误: [Errno 2] No such file or directory: 'python'"
+    },
+    {
+      "description": "完整流程测试",
+      "path": "run_test.py",
+      "result": "⚠️ 错误: [Errno 2] No such file or directory: 'python'"
+    },
+    {
+      "description": "修复测试",
+      "path": "test_fix.py",
+      "result": "⚠️ 错误: [Errno 2] No such file or directory: 'python'"
+    },
+    {
+      "description": "简单测试",
+      "path": "test_simple.py",
+      "result": "⚠️ 错误: [Errno 2] No such file or directory: 'python'"
+    }
+  ]
+}

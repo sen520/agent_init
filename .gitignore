@@ -10,3 +10,5 @@ test.py
 .langgraph_api
 src/knowledge/files
 env/volumes
+venv
+__pycache__
