@@ -93,6 +93,11 @@ class State(BaseModel):
     current_metrics: Dict[str, Any] = Field(default_factory=dict)
     improvement_summary: Dict[str, float] = Field(default_factory=dict)
     
+    # Phase 2 新增字段
+    llm_suggestions: List[Dict[str, Any]] = Field(default_factory=list)  # LLM 建议
+    validation_result: Optional[Dict[str, Any]] = None  # 验证结果
+    report_files: List[str] = Field(default_factory=list)  # 生成的报告文件
+    
     # 循环控制
     iteration_count: int = 0
     max_iterations: int = 5

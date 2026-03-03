@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any
 from src.state.base import State
+from src.config.manager import get_config
 
 
 HTML_TEMPLATE = """<!DOCTYPE html>
