@@ -1,0 +1,45 @@
+# 开发工具依赖
+-r requirements.txt
+
+# 测试框架
+pytest>=8.3.0
+pytest-cov>=5.0.0
+pytest-asyncio>=0.24.0
+pytest-mock>=3.14.0
+
+# 代码质量工具
+black>=24.10.0
+ruff>=0.7.0
+mypy>=1.13.0
+isort>=5.13.0
+flake8>=7.1.0
+
+# 文档生成
+mkdocs>=1.6.0
+mkdocs-material>=9.5.0
+mkdocs-mermaid2-plugin>=1.2.0
+
+# 开发辅助工具
+pre-commit>=4.0.0
+bandit>=1.7.0
+safety>=3.2.0
+
+# 性能分析
+memory-profiler>=0.61.0
+line-profiler>=4.1.0
+
+# 类型检查
+types-PyYAML>=6.0.0
+types-requests>=2.32.0
+
+# 可选LLM提供者
+anthropic>=0.7.0
+google-generativeai>=0.3.0
+
+# IDE支持
+jupyter>=1.0.0
+ipython>=8.15.0
+
+# 构建工具
+build>=1.0.0
+twine>=4.0.0

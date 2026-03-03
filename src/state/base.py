@@ -81,6 +81,7 @@ class State(BaseModel):
     # 分析阶段
     analysis: CodeAnalysis = CodeAnalysis()
     plan: OptimizationPlan = OptimizationPlan()
+    analysis_reports: List[Dict[str, Any]] = Field(default_factory=list)
     
     # 实施阶段
     current_implementation: Optional[ImplementationResult] = None

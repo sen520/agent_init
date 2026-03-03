@@ -1,0 +1,22 @@
+# 🎯 优化配置
+
+## 代码分析配置
+optimization:
+  max_line_length: 100
+  max_function_length: 50
+  security_checks: true
+  backup_enabled: true
+
+## 默认策略组
+strategy_groups:
+  default:
+    - comment_optimizer
+    - empty_line_optimizer
+    - import_optimizer
+  safe:
+    - comment_optimizer
+    - empty_line_optimizer
+  aggressive:
+    - line_length_optimizer
+    - variable_naming_optimizer
+    - function_length_optimizer

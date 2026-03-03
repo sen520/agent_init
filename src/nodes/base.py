@@ -81,6 +81,28 @@ def plan_optimizations(state: State) -> State:
 
 
 # ========================
+# 节点3: 创建分析报告
+# ========================
+def create_analysis_report(state: State) -> State:
+    """创建初步的分析报告"""
+    print("📋 [节点3] 创建分析报告")
+    
+    # 生成基本分析报告
+    report = {
+        "project_path": state.project_path,
+        "files_analyzed": state.analysis.total_files_analyzed,
+        "lines_of_code": state.analysis.total_lines_of_code,
+        "average_complexity": state.analysis.average_complexity,
+        "issues_found": len(state.analysis.issues),
+        "iteration_count": state.iteration_count
+    }
+    
+    state.analysis_reports.append(report)
+    print(f"   分析报告已生成，包含 {len(state.analysis.issues)} 个问题")
+    return state
+
+
+# ========================
 # 节点4: 应用变更
 # ========================
 def apply_changes(state: State) -> State:

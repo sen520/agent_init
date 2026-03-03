@@ -1,0 +1,35 @@
+# 核心依赖 - 2026年更新版本
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+langgraph>=0.2.0
+
+# LangChain社区扩展
+langchain-community>=0.3.0
+
+# 数据模型和配置
+pydantic>=2.5.0,<3.0.0
+pydantic-settings>=2.1.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
+
+# 数据处理
+numpy>=1.24.0
+pandas>=2.0.0
+
+# AI/LLM提供者
+openai>=1.52.0
+
+# 日志和配置
+loguru>=0.7.2
+PyYAML>=6.0.2
+toml>=0.10.2
+
+# 文件处理
+pathlib2>=2.3.0
+
+# 加密和安全
+cryptography>=44.0.0
+
+# 网络请求
+httpx>=0.27.0
+requests>=2.32.0

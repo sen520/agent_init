@@ -50,7 +50,13 @@ async def run_simple_test():
     
     print("-" * 60)
     print("✅ 简化测试通过!")
-    print(f"最终状态: {result.model_dump_json(indent=2)[:200]}...")
+    if isinstance(result, dict):
+        print("✅ 工作流执行完成")
+        print(f"结果类型: {type(result)}")
+        if isinstance(result, dict) and 'iteration_count' in result:
+            print(f"迭代次数: {result['iteration_count']}")
+    else:
+        print(f"最终状态: {result.model_dump_json(indent=2)[:200]}...")
     
     return result
 

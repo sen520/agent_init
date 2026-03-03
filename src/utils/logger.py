@@ -1,70 +1,72 @@
-import os
+"""
+统一日志记录工具
+"""
+import logging
 import sys
-import traceback
-
-from loguru import logger
-
-
-# 2. 自定义控制台 sink（实现截断）
-def truncated_console_sink(message):
-    """控制台输出截断日志（最大200字符）"""
-    max_length = int(os.environ.get('LOG_MAX_LENGTH', '200'))  # 单行最大长度
-    formatted = str(message)
-
-    # 按行处理多行日志
-    lines = []
-    for line in formatted.splitlines():
-        if len(line) > max_length:
-
-            lines.append(f"{line[:max_length]}... [TRUNCATED {len(line) - max_length} chars]")
-        else:
-            lines.append(line)
-
-    sys.stderr.write("\n".join(lines) + "\n")
+from typing import Optional
+from pathlib import Path
+from datetime import datetime
 
 
-def create_logger():
-    # 1. 移除默认 sink 避免重复输出
-    logger.remove()
+class ColoredFormatter(logging.Formatter):
+    """带颜色的日志格式化器"""
+    
+    COLORS = {
+        'DEBUG': '\033[36m',    # 青色
+        'INFO': '\033[32m',     # 绿色
+        'WARNING': '\033[33m',  # 黄色
+        'ERROR': '\033[31m',    # 红色
+        'CRITICAL': '\033[35m', # 紫色
+    }
+    RESET = '\033[0m'
+    
+    def format(self, record):
+        log_color = self.COLORS.get(record.levelname, self.RESET)
+        record.levelname = f"{log_color}{record.levelname}{self.RESET}"
+        return super().format(record)
 
-    # 3. 添加控制台 sink（截断输出）
-    logger.add(
-        sink=truncated_console_sink,
-        level="DEBUG",
-        colorize=True,  # 保持颜色输出
-        backtrace=True,  # 启用异常回溯
-        diagnose=True  # 显示诊断信息
-    )
 
-    # 4. 添加文件 sink（完整日志）
-    logger.add(
-        sink=os.environ.get('LOG_FILE', 'test.log'),
-        rotation=os.environ.get('LOG_SIZE', '20 MB'),  # 按大小轮转
-        retention=os.environ.get('LOG_RETENTION', '30 days'),  # 保留30天
-        compression=os.environ.get('LOG_COMPRESSION', 'zip'),  # 压缩存档
-        level=os.environ.get('LOG_LEVEL', 'DEBUG'),  # 记录所有级别
-        enqueue=True,  # 多进程安全
-        serialize=False,  # 禁用序列化（可读格式）
-        backtrace=True,  # 完整异常回溯
-        diagnose=True,  # 完整诊断信息
-        format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:<8} | {name}:{function}:{line} - {message}"  # 详细格式
-    )
+def setup_logger(
+    name: str,
+    level: str = "INFO",
+    log_file: Optional[str] = None,
+    console_output: bool = True
+) -> logging.Logger:
+    """设置日志记录器"""
+    
+    logger = logging.getLogger(name)
+    logger.setLevel(getattr(logging, level.upper()))
+    
+    # 清除现有处理器
+    logger.handlers.clear()
+    
+    # 控制台处理器
+    if console_output:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_formatter = ColoredFormatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
+    
+    # 文件处理器
+    if log_file:
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(pathname)s:%(lineno)d - %(message)s'
+        )
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+    
     return logger
 
 
-# 测试日志
-def generate_long_log():
-    """生成超长日志的测试函数"""
-    logger.info("Start transaction: T-001")
-    logger.debug("Data payload: " + "x" * 1000)  # 1000字符的超长日志
-    try:
-        1 / 0
-    except Exception:
-        logger.error(traceback.format_exc())
-        logger.exception("Calculation failed")
-
-
-if __name__ == "__main__":
-    logger = create_logger()
-    generate_long_log()
-    logger.success("Test completed")
+# 默认日志记录器
+default_logger = setup_logger(
+    "self_optimizing_assistant",
+    level="INFO",
+    log_file=f"logs/app_{datetime.now().strftime('%Y%m%d')}.log"
+)

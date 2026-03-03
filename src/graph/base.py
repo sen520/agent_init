@@ -28,6 +28,11 @@ except ImportError as e:
 from src.state.base import State
 
 
+def build_graph():
+    """构建默认的工作流图（完整优化流程）"""
+    return build_self_optimizing_graph()
+
+
 def build_simple_graph():
     """构建简单的测试图"""
     # 创建状态图

@@ -1,0 +1,80 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        description: Removes trailing whitespace from all lines
+      - id: end-of-file-fixer
+        description: Makes sure files end with a newline
+      - id: check-yaml
+        description: Attempts to load all yaml files to verify syntax
+      - id: check-added-large-files
+        description: Prevent giant files from being committed
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        description: Check for files that contain merge conflict strings
+      - id: check-case-conflict
+        description: Check for files that would conflict in case-insensitive filesystems
+      - id: check-docstring-first
+        description: Checks for a common error of placing code before the docstring
+      - id: check-json
+        description: Attempts to load all json files to verify syntax
+      - id: pretty-format-json
+        description: This hook sets a standard for formatting json files
+        args: ['--autofix']
+      - id: debug-statements
+        description: Checks for debugger imports and py37+ `breakpoint()` calls
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        description: The uncompromising code formatter
+        language_version: python3
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.0
+    hooks:
+      - id: isort
+        description: A Python utility that sorts imports
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pycqa/ruff
+    rev: v0.7.2
+    hooks:
+      - id: ruff
+        description: An extremely fast Python linter and code transformation tool
+        args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        description: Static type checker for Python
+        additional_dependencies: [types-PyYAML, types-requests]
+        args: [--strict]
+
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        description: Finds common security issues in Python code
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        description: Tool for style guide enforcement
+        additional_dependencies: [flake8-docstrings]
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: ./venv/bin/python -m pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        description: Run pytest on commit

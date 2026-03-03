@@ -1,13 +1,13 @@
 import os
 from dotenv import load_dotenv
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 load_dotenv()
 
 
 class Settings(BaseSettings):
     # LLM 配置
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "dummy-key-for-testing")
     LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-3.5-turbo")
     # 向量库配置
     VECTOR_DB_TYPE: str = os.getenv("VECTOR_DB_TYPE", "chroma")  # chroma/faiss/pinecone
