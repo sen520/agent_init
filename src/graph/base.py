@@ -177,6 +177,71 @@ def build_self_optimizing_graph():
     return builder.compile()
 
 
+def build_phase2_graph():
+    """
+    构建 Phase 2 工作流 - 集成 LLM 和测试验证
+    """
+    builder = StateGraph(State)
+    
+    # 添加基础节点
+    builder.add_node("initialize", initialize_project)
+    builder.add_node("analyze", analyze_code)
+    builder.add_node("apply_optimization", apply_optimization)
+    builder.add_node("analyze_results", analyze_optimization_results)
+    builder.add_node("create_summary", create_optimization_summary)
+    builder.add_node("end", end_optimization)
+    
+    # 尝试添加 Phase 2 节点
+    try:
+        from src.nodes.phase2 import llm_analyze_issues, validate_optimization, generate_llm_report
+        builder.add_node("llm_analyze", llm_analyze_issues)
+        builder.add_node("validate", validate_optimization)
+        builder.add_node("llm_report", generate_llm_report)
+        has_phase2 = True
+    except ImportError as e:
+        print(f"Phase 2 节点不可用: {e}")
+        has_phase2 = False
+    
+    # 设置入口点
+    builder.set_entry_point("initialize")
+    
+    if has_phase2:
+        # Phase 2 完整流程
+        builder.add_edge("initialize", "analyze")
+        builder.add_edge("analyze", "llm_analyze")  # LLM 分析
+        builder.add_edge("llm_analyze", "apply_optimization")
+        builder.add_edge("apply_optimization", "validate")  # 测试验证
+        builder.add_edge("validate", "analyze_results")
+        
+        builder.add_conditional_edges(
+            "analyze_results",
+            lambda state: "continue" if state.should_continue and state.iteration_count < 2 else "end",
+            {
+                "continue": "analyze",
+                "end": "llm_report"  # 生成 LLM 报告
+            }
+        )
+        builder.add_edge("llm_report", "create_summary")
+        builder.add_edge("create_summary", "end")
+    else:
+        # 回退到 Phase 1 流程
+        builder.add_edge("initialize", "analyze")
+        builder.add_edge("analyze", "apply_optimization")
+        builder.add_edge("apply_optimization", "analyze_results")
+        builder.add_conditional_edges(
+            "analyze_results",
+            lambda state: "continue" if state.should_continue else "end",
+            {
+                "continue": "analyze",
+                "end": "create_summary"
+            }
+        )
+        builder.add_edge("create_summary", "end")
+    
+    builder.set_finish_point("end")
+    return builder.compile()
+
+
 # 创建可用的图实例
 simple_app = build_simple_graph()
 if OPTIMIZATION_NODES_AVAILABLE:

@@ -1,16 +1,15 @@
-
-from dotenv import load_dotenv
-from src.config.settings import settings
-from src.graph.base import build_graph, build_simple_graph
-from src.state.base import State
-from src.utils.logger import create_logger
 import asyncio
 import os
 import sys
+from dotenv import load_dotenv
 
 # 确保能够正确导入src模块
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from src.config.settings import settings
+from src.graph.base import build_graph, build_simple_graph, build_phase2_graph
+from src.state.base import State
+from src.utils.logger import create_logger
 
 load_dotenv()
 
@@ -65,9 +64,44 @@ async def run_simple_test():
     return result
 
 
+async def run_phase2_workflow():
+    """运行 Phase 2 工作流（集成 LLM 和测试验证）"""
+    print("🚀 启动 Phase 2 智能优化工作流...")
+    print("🧠 集成 LLM 智能分析和测试验证")
+    print("=" * 60)
+    
+    agent = build_phase2_graph()
+    initial_state = State()
+    
+    print("开始执行...")
+    print("-" * 60)
+    
+    result = await agent.ainvoke(initial_state)
+    
+    print("-" * 60)
+    print("✅ Phase 2 工作流执行完成!")
+    
+    if isinstance(result, dict):
+        # 显示 LLM 建议
+        if 'llm_suggestions' in result and result['llm_suggestions']:
+            print("\n📝 LLM 智能建议:")
+            for suggestion in result['llm_suggestions'][:3]:
+                print(f"  📄 {suggestion['file']}")
+        
+        # 显示验证结果
+        if 'validation_result' in result and result['validation_result']:
+            validation = result['validation_result']
+            if validation.get('success'):
+                print("\n✅ 验证通过")
+            else:
+                print("\n⚠️  验证未完全通过")
+    
+    return result
+
+
 async def main():
     """主函数"""
-    print("🤖 代码自我优化助手 v0.1")
+    print("🤖 代码自我优化助手 v0.2")
     print("=" * 60)
     
     # 检查命令行参数
@@ -82,10 +116,14 @@ async def main():
     elif mode == "full":
         # 运行完整工作流
         await run_full_workflow()
+    elif mode == "phase2":
+        # 运行 Phase 2 工作流
+        await run_phase2_workflow()
     elif mode == "help":
         print("使用说明:")
         print("  python main.py test      # 运行简化测试（默认）")
         print("  python main.py full      # 运行完整工作流")
+        print("  python main.py phase2    # 运行 Phase 2 智能优化")
         print("  python main.py help      # 显示帮助信息")
     else:
         print(f"未知模式: {mode}")
