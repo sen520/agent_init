@@ -33,7 +33,10 @@ async def run_full_workflow():
     
     print("-" * 60)
     print(f"工作流执行完成!")
-    print(f"最终状态: {result.model_dump_json(indent=2)}")
+    if isinstance(result, dict):
+        print(f"最终状态: {result}")
+    else:
+        print(f"最终状态: {result.model_dump_json(indent=2)}")
     
     return result
 

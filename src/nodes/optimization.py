@@ -5,6 +5,8 @@
 from typing import Dict, List, Any, Optional
 import os
 from pathlib import Path
+from datetime import datetime
+import uuid
 
 from src.state.base import State, CodeAnalysis, ImplementationResult
 
@@ -93,12 +95,14 @@ def apply_optimization(state: State) -> State:
                         
                         # 创建实现结果记录
                         impl = ImplementationResult(
-                            step=state.iteration_count,
-                            strategy="auto_optimization",
-                            target_file=file_path,
-                            changes_count=changes_count,
-                            success=True,
-                            details={
+                            suggestion_id=str(uuid.uuid4()),
+                            implemented_at=datetime.now(),
+                            changed_files=[file_path],
+                            lines_added=changes_count,
+                            lines_removed=0,
+                            tests_passed=True,
+                            before_metrics={},
+                            after_metrics={
                                 "applied_strategies": result.get('strategies_applied', []),
                                 "file_issues_count": analysis.get('total_issues', 0),
                                 "changes": result.get('specific_changes', [])[:5]  # 只保留前5个变更
@@ -119,12 +123,14 @@ def apply_optimization(state: State) -> State:
                     
             except Exception as e:
                 error_impl = ImplementationResult(
-                    step=state.iteration_count,
-                    strategy="auto_optimization",
-                    target_file=file_path,
-                    changes_count=0,
-                    success=False,
-                    details={"error": str(e)}
+                    suggestion_id=str(uuid.uuid4()),
+                    implemented_at=datetime.now(),
+                    changed_files=[file_path],
+                    lines_added=0,
+                    lines_removed=0,
+                    tests_passed=False,
+                    before_metrics={},
+                    after_metrics={"error": str(e)}
                 )
                 applied_implementations.append(error_impl)
                 state.logs.append(f"❌ 优化 {os.path.basename(file_path)} 失败: {e}")
@@ -141,20 +147,22 @@ def apply_optimization(state: State) -> State:
             remaining_issues = max(0, len(state.analysis.issues) - total_changes)
             # 创建新的analysis对象反映优化后的状态
             state.analysis = CodeAnalysis(
-                total_files=state.analysis.total_files,
-                total_lines=state.analysis.total_lines,
-                complexity=max(10, state.analysis.complexity - total_changes * 2),
+                total_files_analyzed=state.analysis.total_files_analyzed,
+                total_lines_of_code=state.analysis.total_lines_of_code,
+                average_complexity=max(10, state.analysis.average_complexity - total_changes * 2),
                 issues=[issue for i, issue in enumerate(state.analysis.issues) if i < remaining_issues]
             )
         
     except Exception as e:
         error_impl = ImplementationResult(
-            step=state.iteration_count,
-            strategy="auto_optimization",
-            target_file=project_path,
-            changes_count=0,
-            success=False,
-            details={"error": str(e)}
+            suggestion_id=str(uuid.uuid4()),
+            implemented_at=datetime.now(),
+            changed_files=[project_path],
+            lines_added=0,
+            lines_removed=0,
+            tests_passed=False,
+            before_metrics={},
+            after_metrics={"error": str(e)}
         )
         state.implementations.append(error_impl)
         state.errors.append(f"优化过程错误: {e}")
@@ -178,12 +186,16 @@ def analyze_optimization_results(state: State) -> State:
         return state
     
     # 计算优化效果
-    successful_implementations = [impl for impl in state.implementations if impl.success]
-    total_changes = sum(impl.changes_count for impl in successful_implementations)
+    # 判断成功的标准: after_metrics 中没有 error 字段，且 lines_added > 0
+    successful_implementations = [
+        impl for impl in state.implementations 
+        if not impl.after_metrics.get("error") and impl.lines_added > 0
+    ]
+    total_changes = sum(impl.lines_added for impl in successful_implementations)
     
     # 记录基础的改进指标
     state.improvement_summary = {
-        "files_optimized": len(set(impl.target_file for impl in successful_implementations)),
+        "files_optimized": len(set(impl.changed_files[0] for impl in successful_implementations if impl.changed_files)),
         "total_applied_changes": total_changes,
         "success_rate": len(successful_implementations) / max(len(state.implementations), 1) * 100,
         "iteration_count": state.iteration_count
@@ -192,8 +204,8 @@ def analyze_optimization_results(state: State) -> State:
     # 记录baseline指标（简化）
     state.baseline_metrics = {
         "initial_issues": len(state.analysis.issues) if state.analysis else 0,
-        "files_analyzed": state.analysis.total_files if state.analysis else 0,
-        "initial_complexity": state.analysis.complexity if state.analysis else 50
+        "files_analyzed": state.analysis.total_files_analyzed if state.analysis else 0,
+        "initial_complexity": state.analysis.average_complexity if state.analysis else 50
     }
     
     # 记录当前指标
@@ -201,7 +213,7 @@ def analyze_optimization_results(state: State) -> State:
         "current_issues": len(state.analysis.issues) if state.analysis else 0,
         "files_optimized": state.improvement_summary["files_optimized"],
         "applied_changes": total_changes,
-        "current_complexity": state.analysis.complexity if state.analysis else 50
+        "current_complexity": state.analysis.average_complexity if state.analysis else 50
     }
     
     # 评估是否需要继续
@@ -240,7 +252,7 @@ def create_optimization_summary(state: State) -> State:
     summary = {
         "project": state.project_path or ".",
         "total_iterations": state.iteration_count,
-        "files_processed": state.analysis.total_files if state.analysis else 0,
+        "files_processed": state.analysis.total_files_analyzed if state.analysis else 0,
         "issues_found": len(state.analysis.issues) if state.analysis else 0,
         "optimizations_applied": len(state.applied_changes),
         "success": len(state.errors) == 0,
