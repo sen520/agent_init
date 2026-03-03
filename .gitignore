@@ -177,3 +177,7 @@ __pycache__/
 test_*.py.backup
 demo_target.py.backup
 temp_*.py
+
+# 优化备份目录
+.optimization_backups/
+*.py.bak
