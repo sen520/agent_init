@@ -70,3 +70,18 @@ default_logger = setup_logger(
     level="INFO",
     log_file=f"logs/app_{datetime.now().strftime('%Y%m%d')}.log"
 )
+
+
+def get_logger(name: str) -> logging.Logger:
+    """获取命名日志器"""
+    return logging.getLogger(name)
+
+
+def create_logger(name: str, level: str = "INFO", file_path: Optional[str] = None) -> logging.Logger:
+    """创建日志器的便捷函数"""
+    return setup_logger(name, level, file_path)
+
+
+def setup_logging(level: str = "INFO", log_file: Optional[str] = None):
+    """设置全局日志配置 - 向后兼容"""
+    setup_logger("global", level, log_file)

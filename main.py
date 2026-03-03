@@ -88,7 +88,7 @@ async def main():
         print("使用 'python main.py help' 查看帮助")
 
     # 创建日志记录器
-    logger = create_logger()
+    logger = create_logger("self_optimizing_assistant")
     logger.info(f"工作流执行完成，模式: {mode}")
 
 
