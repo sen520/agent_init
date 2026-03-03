@@ -106,6 +106,12 @@
     }
   },
 
+  "testing": {
+    "timeout": 300,
+    "verbose": true,
+    "fail_fast": false
+  },
+
   "self_optimization": {
     "enabled": false,
     "max_rounds": 3,
