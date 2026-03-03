@@ -1,6 +1,113 @@
 {
-  "model_url": "http://192.168.153.1:5050",
-  "model_name": "qwen/qwen3-8b",
-  "emb": "bge-small-zh-v1.5",
-  "emb_url": "http://127.0.0.1:5000"
+  "version": "1.0.0",
+  "description": "代码自我优化助手配置文件",
+  
+  "workflow": {
+    "max_iterations": 5,
+    "default_mode": "test",
+    "log_level": "INFO"
+  },
+
+  "analysis": {
+    "max_files_to_analyze": 20,
+    "max_files_to_optimize": 15,
+    "include_patterns": ["src/**/*.py", "tests/**/*.py"],
+    "exclude_patterns": ["__pycache__/**", "venv/**", ".venv/**", "*.backup"],
+    "skip_files": ["__init__.py", "conftest.py", "config.py"]
+  },
+
+  "optimization": {
+    "max_line_length": 100,
+    "max_function_length": 50,
+    "max_method_length": 30,
+    "enable_auto_fix": true,
+    "safe_mode": true,
+    "strategies": {
+      "enabled": [
+        "line_length_optimizer",
+        "import_optimizer", 
+        "comment_optimizer",
+        "empty_line_optimizer"
+      ],
+      "advanced": [
+        "variable_naming_optimizer",
+        "function_length_optimizer",
+        "duplicate_code_optimizer"
+      ]
+    }
+  },
+
+  "file_scanner": {
+    "max_file_size_kb": 100,
+    "code_extensions": {
+      "python": [".py"],
+      "javascript": [".js", ".jsx", ".ts", ".tsx"],
+      "java": [".java"],
+      "cpp": [".cpp", ".cc", ".cxx", ".h", ".hpp"]
+    },
+    "exclude_dirs": [
+      "__pycache__",
+      ".git",
+      ".svn",
+      ".vscode",
+      ".idea",
+      "node_modules",
+      "venv",
+      "env",
+      ".venv",
+      ".env",
+      "dist",
+      "build",
+      "target",
+      ".pytest_cache",
+      ".mypy_cache"
+    ]
+  },
+
+  "file_modifier": {
+    "backup_dir": ".optimization_backups",
+    "backup_retention_days": 7,
+    "create_backup": true,
+    "verify_syntax": true,
+    "max_backup_files": 100
+  },
+
+  "report": {
+    "output_dir": "reports",
+    "max_issues_in_report": 50,
+    "include_suggestions": true,
+    "formats": ["html"],
+    "theme": "default"
+  },
+
+  "code_analyzer": {
+    "check_todos": true,
+    "check_security": true,
+    "check_docs": true,
+    "check_imports": true,
+    "severity_thresholds": {
+      "high": 0,
+      "medium": 5,
+      "low": 10
+    }
+  },
+
+  "llm": {
+    "enabled": false,
+    "provider": "openai",
+    "model": "gpt-4",
+    "max_tokens": 1000,
+    "temperature": 0.3
+  },
+
+  "self_optimization": {
+    "enabled": false,
+    "max_rounds": 3,
+    "target_files": [
+      "src/tools/file_scanner.py",
+      "src/strategies/optimization_strategies.py",
+      "src/nodes/base.py",
+      "src/graph/base.py"
+    ]
+  }
 }

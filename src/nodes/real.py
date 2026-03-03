@@ -9,6 +9,7 @@ import os
 from src.state.base import State, CodeIssue
 from src.tools.file_scanner import FileScanner
 from src.tools.code_analyzer import CodeAnalyzer
+from src.config.manager import get_config
 
 
 def initialize_project(state: State) -> State:
@@ -40,6 +41,10 @@ def analyze_code(state: State) -> State:
     """真实代码分析 - 使用 CodeAnalyzer 分析实际文件"""
     print("🔍 [节点2] 分析代码")
     
+    # 加载配置
+    config = get_config()
+    max_files = config.get('analysis.max_files_to_analyze', 20)
+    
     try:
         # 初始化扫描器和分析器
         scanner = FileScanner(state.project_path)
@@ -61,8 +66,8 @@ def analyze_code(state: State) -> State:
         total_complexity = 0
         files_with_issues = 0
         
-        # 限制分析文件数量，避免太慢
-        files_to_analyze = python_files[:20]  # 最多分析20个文件
+        # 限制分析文件数量，避免太慢（使用配置）
+        files_to_analyze = python_files[:max_files]
         
         for file_path in files_to_analyze:
             full_path = Path(state.project_path) / file_path

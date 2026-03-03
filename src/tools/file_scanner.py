@@ -8,50 +8,11 @@ from pathlib import Path
 from typing import List, Dict, Set, Optional
 import fnmatch
 
+from src.config.manager import get_config
+
 
 class FileScanner:
     """项目文件扫描器"""
-    
-    # 常见代码文件扩展名
-    CODE_EXTENSIONS = {
-        'python': ['.py'],
-        'javascript': ['.js', '.jsx', '.ts', '.tsx'],
-        'java': ['.java'],
-        'cpp': ['.cpp', '.cc', '.cxx', '.h', '.hpp'],
-        'go': ['.go'],
-        'rust': ['.rs'],
-        'ruby': ['.rb'],
-        'php': ['.php'],
-        'csharp': ['.cs'],
-        'html': ['.html', '.htm'],
-        'css': ['.css', '.scss', '.less'],
-        'shell': ['.sh', '.bash'],
-        'markdown': ['.md'],
-        'config': ['.json', '.yaml', '.yml', '.toml', '.ini'],
-    }
-    
-    # 常见的排除目录
-    DEFAULT_EXCLUDE_DIRS = {
-        '__pycache__',
-        '.git',
-        '.svn',
-        '.hg',
-        '.vscode',
-        '.idea',
-        'node_modules',
-        'venv',
-        'env',
-        '.env',
-        'dist',
-        'build',
-        'target',
-        'coverage',
-        '.pytest_cache',
-        '.mypy_cache',
-        '__pycache__',
-        '*.egg-info',
-        '.ipynb_checkpoints',
-    }
     
     def __init__(self, project_path: str):
         """初始化扫描器"""
@@ -60,6 +21,30 @@ class FileScanner:
             raise ValueError(f"项目路径不存在: {project_path}")
         if not self.project_path.is_dir():
             raise ValueError(f"项目路径不是目录: {project_path}")
+        
+        # 加载配置
+        config = get_config()
+        scanner_config = config.get_file_scanner_config()
+        
+        # 代码文件扩展名
+        self.code_extensions = scanner_config.get('code_extensions', {
+            'python': ['.py'],
+            'javascript': ['.js', '.jsx', '.ts', '.tsx'],
+            'java': ['.java'],
+            'cpp': ['.cpp', '.cc', '.cxx', '.h', '.hpp'],
+            'go': ['.go'],
+            'rust': ['.rs'],
+            'ruby': ['.rb'],
+            'php': ['.php'],
+            'csharp': ['.cs'],
+        })
+        
+        # 排除目录
+        self.default_exclude_dirs = set(scanner_config.get('exclude_dirs', [
+            '__pycache__', '.git', '.svn', '.hg', '.vscode', '.idea',
+            'node_modules', 'venv', 'env', '.venv', '.env',
+            'dist', 'build', 'target', '.pytest_cache', '.mypy_cache'
+        ]))
     
     def scan_project(self, 
                      extensions: Optional[List[str]] = None,
@@ -77,7 +62,7 @@ class FileScanner:
             字典 {扩展名: [文件路径列表]}
         """
         if exclude_dirs is None:
-            exclude_dirs = self.DEFAULT_EXCLUDE_DIRS
+            exclude_dirs = self.default_exclude_dirs
         if exclude_files is None:
             exclude_files = set()
         
@@ -86,7 +71,7 @@ class FileScanner:
         
         # 如果没有指定扩展名，扫描所有代码扩展名
         if not extensions:
-            for ext_list in self.CODE_EXTENSIONS.values():
+            for ext_list in self.code_extensions.values():
                 extensions_set.update(ext_list)
         
         # 初始化结果字典
@@ -125,10 +110,14 @@ class FileScanner:
     def scan_python_files(self, exclude_patterns: Optional[List[str]] = None) -> List[str]:
         """专门扫描Python文件"""
         exclude = set(exclude_patterns) if exclude_patterns else set()
-        exclude.update(['setup.py', 'test_*.py', '*_test.py'])
+        
+        # 从配置获取排除模式
+        config = get_config()
+        skip_files = config.get('analysis.skip_files', [])
+        exclude.update(skip_files)
         
         all_files = self.scan_project(
-            extensions=self.CODE_EXTENSIONS['python'],
+            extensions=self.code_extensions.get('python', ['.py']),
             exclude_files=exclude
         )
         
@@ -163,8 +152,11 @@ class FileScanner:
         
         return stats
     
-    def find_large_files(self, max_size_kb: int = 100) -> List[Dict[str, str]]:
+    def find_large_files(self, max_size_kb: int = None) -> List[Dict[str, str]]:
         """查找大的代码文件"""
+        if max_size_kb is None:
+            max_size_kb = get_config().get('file_scanner.max_file_size_kb', 100)
+            
         large_files = []
         python_files = self.scan_python_files()
         

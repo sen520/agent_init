@@ -351,12 +351,16 @@ def generate_html_report(state: State, output_path: str = None) -> str:
     
     Args:
         state: 工作流状态
-        output_path: 输出路径（可选）
+        output_path: 输出路径（可选，从配置读取默认路径）
         
     Returns:
         HTML 文件路径
     """
     from jinja2 import Template
+    
+    # 加载配置
+    config = get_config()
+    report_config = config.get_report_config()
     
     # 准备数据
     template_data = {
@@ -381,10 +385,11 @@ def generate_html_report(state: State, output_path: str = None) -> str:
     
     # 准备问题列表
     severity_order = {"high": 0, "medium": 1, "low": 2}
+    max_issues = report_config.get('max_issues_in_report', 50)
     sorted_issues = sorted(
         state.analysis.issues,
         key=lambda x: severity_order.get(x.severity, 3)
-    )[:50]  # 最多显示50个
+    )[:max_issues]  # 最多显示配置数量的问题
     
     for issue in sorted_issues:
         template_data["issues"].append({
@@ -402,7 +407,7 @@ def generate_html_report(state: State, output_path: str = None) -> str:
     
     # 确定输出路径
     if not output_path:
-        reports_dir = Path("reports")
+        reports_dir = Path(report_config.get('output_dir', 'reports'))
         reports_dir.mkdir(exist_ok=True)
         output_path = reports_dir / f"analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
     

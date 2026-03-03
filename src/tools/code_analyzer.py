@@ -8,20 +8,27 @@ import re
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 
+from src.config.manager import get_config
+
 
 class CodeAnalyzer:
     """实用的代码分析器"""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {
-            'max_line_length': 100,
-            'max_function_length': 50,
-            'max_method_length': 30,
-            'check_todos': True,
-            'check_security': True,
-            'check_docs': True,
-            'check_imports': True,
-        }
+        if config is None:
+            # 从配置文件加载
+            cfg = get_config()
+            self.config = {
+                'max_line_length': cfg.get('optimization.max_line_length', 100),
+                'max_function_length': cfg.get('optimization.max_function_length', 50),
+                'max_method_length': cfg.get('optimization.max_method_length', 30),
+                'check_todos': cfg.get('code_analyzer.check_todos', True),
+                'check_security': cfg.get('code_analyzer.check_security', True),
+                'check_docs': cfg.get('code_analyzer.check_docs', True),
+                'check_imports': cfg.get('code_analyzer.check_imports', True),
+            }
+        else:
+            self.config = config
         self.issues = []
         self.metrics = {}
     

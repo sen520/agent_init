@@ -9,11 +9,17 @@ from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 from datetime import datetime
 
+from src.config.manager import get_config
+
 
 class FileModifier:
     """安全的文件修改器"""
     
-    def __init__(self, backup_dir: str = ".optimization_backups"):
+    def __init__(self, backup_dir: str = None):
+        # 从配置加载备份目录
+        if backup_dir is None:
+            backup_dir = get_config().get('file_modifier.backup_dir', '.optimization_backups')
+        
         self.backup_dir = Path(backup_dir)
         self.backup_dir.mkdir(exist_ok=True)
         self.modified_files = []
@@ -115,17 +121,20 @@ class FileModifier:
         
         return success, failed
     
-    def cleanup_old_backups(self, days: int = 7) -> int:
+    def cleanup_old_backups(self, days: int = None) -> int:
         """
         清理旧的备份文件
         
         Args:
-            days: 保留天数
+            days: 保留天数（从配置读取默认值）
             
         Returns:
             删除的文件数
         """
         from datetime import timedelta
+        
+        if days is None:
+            days = get_config().get('file_modifier.backup_retention_days', 7)
         
         cutoff = datetime.now() - timedelta(days=days)
         deleted = 0

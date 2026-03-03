@@ -8,6 +8,8 @@ import re
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 
+from src.config.manager import get_config
+
 
 class OptimizationStrategy:
     """优化策略基类"""
@@ -34,7 +36,8 @@ class LineLengthOptimizer(OptimizationStrategy):
             name="line_length_optimizer",
             description="优化过长的代码行，自动拆分"
         )
-        self.max_line_length = 100
+        # 从配置加载
+        self.max_line_length = get_config().get('optimization.max_line_length', 100)
     
     def analyze(self, file_path: str, content: str) -> Dict[str, Any]:
         """查找过长的行"""
@@ -311,7 +314,8 @@ class FunctionLengthOptimizer(OptimizationStrategy):
             name="function_length_optimizer",
             description="检测过长的函数并建议拆分"
         )
-        self.max_function_length = 50
+        # 从配置加载
+        self.max_function_length = get_config().get('optimization.max_function_length', 50)
     
     def analyze(self, file_path: str, content: str) -> Dict[str, Any]:
         """分析函数长度"""

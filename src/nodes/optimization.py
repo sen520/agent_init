@@ -9,6 +9,7 @@ from datetime import datetime
 import uuid
 
 from src.state.base import State, CodeAnalysis, ImplementationResult
+from src.config.manager import get_config
 
 
 def apply_optimization(state: State) -> State:
@@ -23,6 +24,16 @@ def apply_optimization(state: State) -> State:
         state.logs.append(f"导入优化模块失败: {e}")
         state.errors.append(f"优化模块导入错误: {e}")
         return state
+    
+    # 加载配置
+    config = get_config()
+    max_optimize_files = config.get('analysis.max_files_to_optimize', 15)
+    skip_files = set(config.get('analysis.skip_files', ['__init__.py', 'conftest.py', 'config.py']))
+    
+    # 获取启用的策略
+    enabled_strategies = config.get('optimization.strategies.enabled', [
+        'empty_line_optimizer', 'comment_optimizer', 'import_optimizer'
+    ])
     
     # 获取项目路径
     project_path = state.project_path or "."
@@ -47,14 +58,13 @@ def apply_optimization(state: State) -> State:
         for issue in state.analysis.issues:
             files_with_issues.add(issue.file_path)
         
-        # 只优化有问题的文件
+        # 只优化有问题的文件（使用配置限制数量）
         files_to_optimize = []
-        for file_name in python_files[:15]:  # 限制数量
+        for file_name in python_files[:max_optimize_files]:
             if file_name in files_with_issues:
                 file_path = os.path.join(project_path, file_name)
                 
                 # 跳过敏感文件
-                skip_files = {'__init__.py', 'test_optimization.py', 'conftest.py'}
                 if any(sf in file_name for sf in skip_files):
                     continue
                     
@@ -83,12 +93,8 @@ def apply_optimization(state: State) -> State:
                 analysis = optimizer.analyze_file(file_path)
                 
                 if analysis.get('needs_optimization', False):
-                    # 选择优化策略 - 只使用安全的策略
-                    strategies_to_apply = [
-                        'empty_line_optimizer',    # 空行规范化
-                        'comment_optimizer',       # 注释格式化
-                        'import_optimizer',        # 导入组织
-                    ]
+                    # 选择优化策略 - 使用配置的启用策略
+                    strategies_to_apply = enabled_strategies
                     
                     # 应用优化（获取优化后的内容）
                     result = optimize_code_file(file_path, strategies_to_apply)
