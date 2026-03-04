@@ -5,10 +5,13 @@
 import ast
 import os
 import re
+import logging
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 
 from src.config.manager import get_config
+
+logger = logging.getLogger(__name__)
 
 
 class CodeAnalyzer:
@@ -287,7 +290,7 @@ class CodeAnalyzer:
                 results.append(result)
                 total_issues += len(result.get('issues', []))
             except Exception as e:
-                print(f"分析文件 {file_path} 时出错: {e}")
+                logger.error(f"分析文件 {file_path} 时出错: {e}")
         
         # 统计
         file_count = len(results)
@@ -332,58 +335,57 @@ def analyze_directory(dir_path: str) -> Dict[str, Any]:
 
 def test_analyzer():
     """测试函数"""
-    print("🧪 代码分析器测试")
-    print("=" * 60)
+    logger.info("🧪 代码分析器测试")
+    logger.info("=" * 60)
     
     try:
         # 测试当前文件
         result = analyze_file(__file__)
         
-        print(f"📄 分析文件: {result['file_name']}")
-        print(f"📊 总行数: {result['total_lines']}")
-        print(f"📝 非空行: {result.get('non_empty_lines', 'N/A')}")
+        logger.info(f"📄 分析文件: {result['file_name']}")
+        logger.info(f"📊 总行数: {result['total_lines']}")
+        logger.info(f"📝 非空行: {result.get('non_empty_lines', 'N/A')}")
         
         stats = result.get('stats', {})
         if stats:
-            print(f"📈 字符数: {stats.get('total_chars', 'N/A')}")
-            print(f"💬 注释行: {stats.get('comment_lines', 'N/A')} ({stats.get('comment_percentage', 'N/A')}%)")
+            logger.info(f"📈 字符数: {stats.get('total_chars', 'N/A')}")
+            logger.info(f"💬 注释行: {stats.get('comment_lines', 'N/A')} ({stats.get('comment_percentage', 'N/A')}%)")
         
         issues = result.get('issues', [])
-        print(f"🔍 发现问题: {len(issues)} 个")
+        logger.info(f"🔍 发现问题: {len(issues)} 个")
         
         if issues:
             issue_summary = result.get('issue_summary', {})
-            print(f"\n问题汇总:")
+            logger.info("问题汇总:")
             for issue_type, count in issue_summary.items():
-                print(f"  {issue_type}: {count}个")
+                logger.info(f"  {issue_type}: {count}个")
             
-            print("\n具体问题 (前5个):")
+            logger.info("具体问题 (前5个):")
             for issue in issues[:5]:
                 line = issue.get('line', '?')
                 message = issue.get('message', '')
                 severity = issue.get('severity', 'info')
-                print(f"  L{line}: {message} [{severity}]")
+                logger.info(f"  L{line}: {message} [{severity}]")
         else:
-            print("\n✅ 没有发现问题")
+            logger.info("✅ 没有发现问题")
         
         # 测试目录分析
-        print("\n📁 测试目录分析...")
+        logger.info("📁 测试目录分析...")
         dir_result = analyze_directory('.')
-        print(f"分析完成: {dir_result.get('files_analyzed', 0)} 个文件")
-        print(f"总问题数: {dir_result.get('total_issues', 0)}")
+        logger.info(f"分析完成: {dir_result.get('files_analyzed', 0)} 个文件")
+        logger.info(f"总问题数: {dir_result.get('total_issues', 0)}")
         
         top_issues = dir_result.get('top_issues', [])
         if top_issues:
-            print("\n最常见的问题类型:")
+            logger.info("最常见的问题类型:")
             for item in top_issues[:5]:
-                print(f"  {item['type']}: {item['count']} 次")
+                logger.info(f"  {item['type']}: {item['count']} 次")
         
-        print("\n✅ 代码分析器测试完成")
+        logger.info("✅ 代码分析器测试完成")
         
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"❌ 测试失败: {e}")
+        logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":

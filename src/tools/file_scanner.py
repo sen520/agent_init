@@ -4,11 +4,14 @@
 """
 import os
 import sys
+import logging
 from pathlib import Path
 from typing import List, Dict, Set, Optional
 import fnmatch
 
 from src.config.manager import get_config
+
+logger = logging.getLogger(__name__)
 
 
 class FileScanner:
@@ -145,7 +148,7 @@ class FileScanner:
                     lines = f.readlines()
                     python_lines += len([l for l in lines if l.strip()])
             except Exception as e:
-                print(f"无法读取文件 {file}: {e}")
+                logger.warning(f"无法读取文件 {file}: {e}")
         
         stats['lines_by_type']['python'] = python_lines
         stats['total_lines'] = python_lines
@@ -207,41 +210,41 @@ def main():
     test_path = os.getcwd()
     scanner = FileScanner(test_path)
     
-    print(f"🔍 扫描项目: {test_path}")
-    print("=" * 60)
+    logger.info(f"🔍 扫描项目: {test_path}")
+    logger.info("=" * 60)
     
     # 扫描Python文件
     python_files = scanner.scan_python_files()
-    print(f"📁 找到 {len(python_files)} 个Python文件")
+    logger.info(f"📁 找到 {len(python_files)} 个Python文件")
     
     if python_files:
-        print("示例文件:")
+        logger.info("示例文件:")
         for file in python_files[:10]:
-            print(f"  - {file}")
+            logger.info(f"  - {file}")
         if len(python_files) > 10:
-            print(f"  ... 还有 {len(python_files) - 10} 个文件")
+            logger.info(f"  ... 还有 {len(python_files) - 10} 个文件")
     
     # 获取统计信息
     stats = scanner.get_project_stats()
-    print(f"\n📊 项目统计:")
-    print(f"  Python文件数: {stats['total_files_by_type'].get('python', 0)}")
-    print(f"  总代码行数: {stats['total_lines']}")
+    logger.info(f"📊 项目统计:")
+    logger.info(f"  Python文件数: {stats['total_files_by_type'].get('python', 0)}")
+    logger.info(f"  总代码行数: {stats['total_lines']}")
     
     # 查找大文件
     large_files = scanner.find_large_files(max_size_kb=10)
     if large_files:
-        print(f"\n⚠️  发现 {len(large_files)} 个大文件 (>10KB):")
+        logger.warning(f"⚠️  发现 {len(large_files)} 个大文件 (>10KB):")
         for file in large_files:
-            print(f"  - {file['path']} ({file['size_kb']} KB, {file['lines']} 行)")
+            logger.warning(f"  - {file['path']} ({file['size_kb']} KB, {file['lines']} 行)")
     
     # 查找重复文件名
     duplicates = scanner.find_duplicate_filenames()
     if duplicates:
-        print(f"\n🔴 发现 {len(duplicates)} 个重复文件名:")
+        logger.warning(f"🔴 发现 {len(duplicates)} 个重复文件名:")
         for name, paths in list(duplicates.items())[:5]:
-            print(f"  - {name} 出现在:")
+            logger.warning(f"  - {name} 出现在:")
             for path in paths:
-                print(f"      {path}")
+                logger.warning(f"      {path}")
 
 
 if __name__ == "__main__":

@@ -341,24 +341,24 @@ def analyze_with_llm(code: str, issues: List[Dict]) -> str:
 if __name__ == "__main__":
     # 测试 LLM 功能
     logging.basicConfig(level=logging.INFO)
-    print("🧠 LLM 增强器测试")
-    print("=" * 50)
+    logger.info("🧠 LLM 增强器测试")
+    logger.info("=" * 50)
     
     enhancer = LLMEnhancer()
     
     if enhancer.is_available():
-        print("✅ LLM 客户端已初始化")
-        print(f"   模型: {enhancer.model}")
-        print(f"   API URL: {enhancer.base_url}")
+        logger.info("✅ LLM 客户端已初始化")
+        logger.info(f"   模型: {enhancer.model}")
+        logger.info(f"   API URL: {enhancer.base_url}")
         
         # 测试解释功能
         result = enhancer.explain_issue(
             "long_line",
             "代码行长度超过 100 个字符"
         )
-        print("\n测试输出:")
-        print(result[:500])
+        logger.info("测试输出:")
+        logger.info(result[:500])
     else:
-        print("⚠️  LLM 未启用或配置缺失")
-        print("   请设置 KIMI_API_KEY 环境变量")
-        print("   并在 config.json 中设置 llm.enabled: true")
+        logger.warning("⚠️  LLM 未启用或配置缺失")
+        logger.warning("   请设置 KIMI_API_KEY 环境变量")
+        logger.warning("   并在 config.json 中设置 llm.enabled: true")
