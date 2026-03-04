@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](./)
-[![Coverage](https://img.shields.io/badge/coverage-65%25-brightgreen.svg)](./)
+[![Coverage](https://img.shields.io/badge/coverage-63%25-brightgreen.svg)](./)
 
 **基于 LangGraph 工作流的智能代码优化系统**
 
@@ -27,7 +27,7 @@
 - 🔄 **LangGraph 工作流** - 状态驱动的优化流程
 - 📊 **详细报告** - HTML格式的可视化分析报告
 - 🛡️ **安全可靠** - 自动备份和验证机制
-- ✅ **高测试覆盖** - 65% 代码覆盖率（核心模块）
+- ✅ **高测试覆盖** - 63% 代码覆盖率（核心模块 80%+）
 
 ---
 
@@ -56,7 +56,7 @@ source venv/bin/activate        # Linux/Mac
 pip install -r requirements.txt
 
 # 4. 验证安装
-python -m pytest test/ -v       # 运行测试
+python -m pytest tests/ -v       # 运行测试
 python main.py help             # 查看帮助
 ```
 
@@ -67,7 +67,7 @@ python main.py help             # 查看帮助
 python main.py help
 
 # 运行测试套件
-python -m pytest test/ -v
+python -m pytest tests/ -v
 
 # 完整优化分析
 python main.py full
@@ -96,13 +96,13 @@ python main.py full
 
 ```bash
 # 运行所有测试
-python -m pytest test/ -v
+python -m pytest tests/ -v
 
 # 运行测试并生成覆盖率报告
-python -m pytest test/ --cov=src --cov-report=html
+python -m pytest tests/ --cov=src --cov-report=html
 
 # 只运行单元测试
-python -m pytest test/ -m unit -v
+python -m pytest tests/ -m unit -v
 ```
 
 ---
@@ -165,7 +165,7 @@ python -m pytest test/ -m unit -v
 │       ├── logging_config.py        # 日志配置
 │       ├── report_generator.py      # 报告生成器
 │       └── utils.py                 # 通用工具
-├── 📁 test/                         # 测试目录（183个测试）
+├── 📁 tests/                         # 测试目录（224个测试）
 ├── 📁 reports/                      # 分析报告输出
 ├── 📄 config.json                   # 配置文件
 ├── 📄 main.py                       # 主程序入口
@@ -174,10 +174,10 @@ python -m pytest test/ -m unit -v
 └── 📄 README.md                     # 项目文档
 
 📊 代码统计:
-   • 总Python文件: ~30个
-   • 测试文件: 14个
-   • 测试用例: 183个
-   • 代码覆盖率: 65%
+   • 总Python文件: 48个
+   • 测试文件: 22个
+   • 测试用例: 224个
+   • 代码覆盖率: 63%
 ```
 
 ---
@@ -264,31 +264,31 @@ python -m pytest test/ -m unit -v
 
 ```bash
 # 运行所有测试
-python -m pytest test/ -v
+python -m pytest tests/ -v
 
 # 快速测试（无覆盖率）
-python -m pytest test/ -q
+python -m pytest tests/ -q
 
 # 生成 HTML 覆盖率报告
-python -m pytest test/ --cov=src --cov-report=html
+python -m pytest tests/ --cov=src --cov-report=html
 open htmlcov/index.html  # 查看报告
 
 # 只运行特定测试
-python -m pytest test/test_config_manager.py -v
+python -m pytest tests/test_config_manager.py -v
 ```
 
 ### 📊 **覆盖率报告**
 
-当前测试覆盖率：**65%**（实际使用模块）
+当前测试覆盖率：**63%**（实际使用模块）
 
 ```
 核心模块覆盖率:
-✅ src/nodes/real.py              87%
-✅ src/utils/file_modifier.py     84%
-✅ src/utils/report_generator.py  91%
+✅ src/nodes/real.py              95%
+✅ src/utils/file_modifier.py     85%
+✅ src/utils/report_generator.py  92%
 ✅ src/tools/ast_parser.py        80%
-✅ src/config/manager.py          73%
-✅ src/testing/validator.py       70%
+✅ src/config/manager.py          90%
+✅ src/testing/validator.py       80%
 ```
 
 ---
@@ -347,7 +347,7 @@ $ python main.py full
 ### 🧪 **示例3: 运行测试**
 
 ```bash
-$ python -m pytest test/ -v
+$ python -m pytest tests/ -v
 
 ============================= test session starts ==============================
 platform linux -- Python 3.12.3
@@ -409,7 +409,7 @@ class TestNewFeature:
 # 确保虚拟环境激活
 source venv/bin/activate
 pip install -r requirements.txt
-python -m pytest test/  # 验证安装
+python -m pytest tests/  # 验证安装
 ```
 
 **Q: 🧪 测试失败？**
@@ -439,13 +439,21 @@ python main.py test
 
 ## 📈 更新日志
 
-### v0.2.0 (2026-03-04)
-- ✅ 添加 183 个单元测试，覆盖率 65%
+### v0.3.0 (2026-03-04)
+- ✅ 添加 224 个单元测试，覆盖率 63%
+- 🔧 修复 6 处裸 except 语句
+- 📝 替换 359 处 print 为 logger 统一日志
+- 🗑️ 清理 14 个不属于项目的文件
+- 🧹 删除 8,928 个 Python 缓存文件
+- 📦 整理 requirements 文件（删除 2 个冗余）
+- 🗂️ 移动项目报告到 reports/archived/
+
+### v0.2.0 (2026-03-03)
 - 🔧 重构配置管理，添加配置验证
-- 🛠️ 修复代码中的问题（类名冲突、裸异常等）
+- 🛠️ 修复代码中的问题（类名冲突等）
 - 📝 添加 .coveragerc 配置
 
-### v0.1.0 (2026-03-03)
+### v0.1.0 (2026-03-02)
 - 🎉 初始版本发布
 - 🤖 LangGraph 工作流集成
 - 🎨 7大优化策略实现
@@ -478,6 +486,6 @@ python main.py test
 
 ---
 
-*最后更新: 2026-03-04 | 版本: v0.2.0 | 测试: 183 passed | 覆盖率: 65%*
+*最后更新: 2026-03-04 | 版本: v0.3.0 | 测试: 224 passed | 覆盖率: 63%*
 
 </div>
