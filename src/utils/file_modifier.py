@@ -145,7 +145,8 @@ class FileModifier:
                 if mtime < cutoff:
                     backup_file.unlink()
                     deleted += 1
-            except Exception:
+            except Exception as e:
+                logger.debug(f"删除旧备份失败: {e}")
                 pass
         
         return deleted

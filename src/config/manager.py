@@ -80,81 +80,55 @@ class ConfigManager:
         }
     
     def _validate_config(self):
-        """验证配置有效性"""
+        """验证配置有效性（使用规则驱动）"""
         errors = []
         
-        # 验证 workflow
-        max_iterations = self._config.get('workflow', {}).get('max_iterations')
-        if max_iterations is not None:
-            if not isinstance(max_iterations, int) or max_iterations < 1 or max_iterations > 100:
-                errors.append(f"workflow.max_iterations 必须在 1-100 之间，当前: {max_iterations}")
+        # 定义验证规则: (路径, 类型, 最小值, 最大值)
+        validation_rules = [
+            ('workflow.max_iterations', int, 1, 100),
+            ('analysis.max_files_to_analyze', int, 1, 1000),
+            ('analysis.max_files_to_optimize', int, 1, 1000),
+            ('optimization.max_line_length', int, 50, 500),
+            ('optimization.max_function_length', int, 10, 500),
+            ('file_scanner.max_file_size_kb', int, 1, 10000),
+            ('file_modifier.backup_retention_days', int, 1, 365),
+            ('report.max_issues_in_report', int, 10, 1000),
+            ('testing.timeout', int, 10, 3600),
+        ]
         
-        # 验证 analysis
-        analysis = self._config.get('analysis', {})
-        max_files_analyze = analysis.get('max_files_to_analyze')
-        if max_files_analyze is not None:
-            if not isinstance(max_files_analyze, int) or max_files_analyze < 1 or max_files_analyze > 1000:
-                errors.append(f"analysis.max_files_to_analyze 必须在 1-1000 之间，当前: {max_files_analyze}")
+        for path, expected_type, min_val, max_val in validation_rules:
+            value = self._get_nested_value(path)
+            if value is not None:
+                if not isinstance(value, expected_type) or not (min_val <= value <= max_val):
+                    errors.append(f"{path} 必须是 {expected_type.__name__} 且在 {min_val}-{max_val} 之间，当前: {value}")
         
-        max_files_optimize = analysis.get('max_files_to_optimize')
-        if max_files_optimize is not None:
-            if not isinstance(max_files_optimize, int) or max_files_optimize < 1 or max_files_optimize > 1000:
-                errors.append(f"analysis.max_files_to_optimize 必须在 1-1000 之间，当前: {max_files_optimize}")
-        
-        # 验证 optimization
-        optimization = self._config.get('optimization', {})
-        max_line_length = optimization.get('max_line_length')
-        if max_line_length is not None:
-            if not isinstance(max_line_length, int) or max_line_length < 50 or max_line_length > 500:
-                errors.append(f"optimization.max_line_length 必须在 50-500 之间，当前: {max_line_length}")
-        
-        max_function_length = optimization.get('max_function_length')
-        if max_function_length is not None:
-            if not isinstance(max_function_length, int) or max_function_length < 10 or max_function_length > 500:
-                errors.append(f"optimization.max_function_length 必须在 10-500 之间，当前: {max_function_length}")
-        
-        # 验证 file_scanner
-        max_file_size = self._config.get('file_scanner', {}).get('max_file_size_kb')
-        if max_file_size is not None:
-            if not isinstance(max_file_size, int) or max_file_size < 1 or max_file_size > 10000:
-                errors.append(f"file_scanner.max_file_size_kb 必须在 1-10000 之间，当前: {max_file_size}")
-        
-        # 验证 file_modifier
-        backup_retention = self._config.get('file_modifier', {}).get('backup_retention_days')
-        if backup_retention is not None:
-            if not isinstance(backup_retention, int) or backup_retention < 1 or backup_retention > 365:
-                errors.append(f"file_modifier.backup_retention_days 必须在 1-365 之间，当前: {backup_retention}")
-        
-        # 验证 report
-        max_issues = self._config.get('report', {}).get('max_issues_in_report')
-        if max_issues is not None:
-            if not isinstance(max_issues, int) or max_issues < 10 or max_issues > 1000:
-                errors.append(f"report.max_issues_in_report 必须在 10-1000 之间，当前: {max_issues}")
-        
-        # 验证 llm
+        # LLM 特殊验证
         llm_config = self._config.get('llm', {})
         if llm_config.get('enabled', False):
             max_tokens = llm_config.get('max_tokens')
-            if max_tokens is not None:
-                if not isinstance(max_tokens, int) or max_tokens < 100 or max_tokens > 8000:
-                    errors.append(f"llm.max_tokens 必须在 100-8000 之间，当前: {max_tokens}")
+            if max_tokens is not None and not (100 <= max_tokens <= 8000):
+                errors.append(f"llm.max_tokens 必须在 100-8000 之间，当前: {max_tokens}")
             
             temperature = llm_config.get('temperature')
-            if temperature is not None:
-                if not isinstance(temperature, (int, float)) or temperature < 0 or temperature > 2:
-                    errors.append(f"llm.temperature 必须在 0-2 之间，当前: {temperature}")
-        
-        # 验证 testing
-        timeout = self._config.get('testing', {}).get('timeout')
-        if timeout is not None:
-            if not isinstance(timeout, int) or timeout < 10 or timeout > 3600:
-                errors.append(f"testing.timeout 必须在 10-3600 秒之间，当前: {timeout}")
+            if temperature is not None and not (0 <= temperature <= 2):
+                errors.append(f"llm.temperature 必须在 0-2 之间，当前: {temperature}")
         
         if errors:
             error_msg = "\n  - ".join([""] + errors)
             raise ConfigValidationError(f"配置验证失败:{error_msg}")
         
         logger.info("配置验证通过")
+    
+    def _get_nested_value(self, path: str) -> Any:
+        """获取嵌套配置值"""
+        keys = path.split('.')
+        value = self._config
+        for key in keys:
+            if isinstance(value, dict) and key in value:
+                value = value[key]
+            else:
+                return None
+        return value
     
     def get(self, key: str, default: Any = None) -> Any:
         """

@@ -29,7 +29,8 @@ def check_fonts_installed():
                 logger.warning(
                     f"No Chinese fonts were detected, the converted document may not display Chinese content properly."
                 )
-        except Exception:
+        except Exception as e:
+            logger.debug(f"字体检测失败: {e}")
             pass
 
 

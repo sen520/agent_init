@@ -112,9 +112,9 @@ class State(BaseModel):
         """添加日志消息"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.logs.append(f"[{timestamp}] {message}")
-        # 保持日志大小合理
+        # 保持日志大小合理（原地删除，不创建新列表）
         if len(self.logs) > 100:
-            self.logs = self.logs[-50:]
+            del self.logs[:-50]
     
     def add_error(self, error: str):
         """添加错误消息"""

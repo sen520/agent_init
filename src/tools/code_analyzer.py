@@ -66,8 +66,10 @@ class CodeAnalyzer:
                 
             except SyntaxError as e:
                 self._add_issue('syntax_error', e.lineno, f'语法错误: {str(e)}')
-            except Exception:
+            except Exception as e:
                 # AST解析失败，但仍继续其他检查
+                import logging
+                logging.debug(f"AST解析失败 {file_path}: {e}")
                 pass
             
             return {

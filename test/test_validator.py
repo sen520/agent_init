@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试 TestValidator 测试验证器
+测试 CodeValidator 测试验证器
 """
 import pytest
 import tempfile
@@ -9,11 +9,11 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.testing.validator import TestValidator, validate_optimization_result
+from src.testing.validator import CodeValidator, validate_optimization_result
 
 
-class TestTestValidator:
-    """TestValidator 测试类"""
+class TestCodeValidator:
+    """CodeValidator 测试类"""
     
     @pytest.fixture
     def temp_project(self):
@@ -47,12 +47,12 @@ def broken(
     
     def test_validator_initialization(self, temp_project):
         """测试验证器初始化"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         assert validator.project_path == temp_project
     
     def test_validate_valid_file(self, temp_project, valid_python_file):
         """测试验证有效的 Python 文件"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         result = validator.validate_file(valid_python_file)
         
         assert result['valid']
@@ -61,7 +61,7 @@ def broken(
     
     def test_validate_invalid_file(self, temp_project, invalid_python_file):
         """测试验证无效的 Python 文件"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         result = validator.validate_file(invalid_python_file)
         
         assert not result['valid']
@@ -70,7 +70,7 @@ def broken(
     
     def test_validate_nonexistent_file(self, temp_project):
         """测试验证不存在的文件"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         result = validator.validate_file("/nonexistent/file.py")
         
         assert not result['valid']
@@ -81,7 +81,7 @@ def broken(
         empty_file = temp_project / "empty.py"
         empty_file.write_text("")
         
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         result = validator.validate_file(str(empty_file))
         
         assert not result['valid']
@@ -89,7 +89,7 @@ def broken(
     
     def test_parse_pytest_output(self, temp_project):
         """测试解析 pytest 输出"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         
         sample_output = """
 ============================= test session starts ==============================
@@ -118,7 +118,7 @@ ERROR test_example.py::test_error - NameError
     
     def test_validate_after_optimization_empty(self, temp_project):
         """测试优化后验证（空文件列表）"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         result = validator.validate_after_optimization([])
         
         assert result['success']
@@ -126,7 +126,7 @@ ERROR test_example.py::test_error - NameError
     
     def test_quick_check_no_src(self, temp_project):
         """测试快速检查（无 src 模块）"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         # 临时项目中没有 src 模块，应该失败
         result = validator.quick_check()
         assert not result

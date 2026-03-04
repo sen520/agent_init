@@ -11,11 +11,11 @@ import subprocess
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.testing.validator import TestValidator, validate_optimization_result
+from src.testing.validator import CodeValidator, validate_optimization_result
 
 
-class TestTestValidatorExtended:
-    """扩展的 TestValidator 测试"""
+class TestCodeValidatorExtended:
+    """扩展的 CodeValidator 测试"""
     
     @pytest.fixture
     def temp_project(self):
@@ -33,7 +33,7 @@ def test_pass():
     
     def test_run_tests_success(self, temp_project):
         """测试成功运行测试"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         
         result = validator.run_tests(verbose=False)
         
@@ -43,7 +43,7 @@ def test_pass():
     
     def test_run_tests_with_path(self, temp_project):
         """测试指定路径运行测试"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         
         result = validator.run_tests(test_path=str(temp_project / "tests"))
         
@@ -51,7 +51,7 @@ def test_pass():
     
     def test_run_tests_nonexistent_path(self, temp_project):
         """测试指定不存在的路径"""
-        validator = TestValidator(str(temp_project))
+        validator = CodeValidator(str(temp_project))
         
         result = validator.run_tests(test_path="/nonexistent/path")
         
@@ -59,7 +59,7 @@ def test_pass():
     
     def test_validate_file_syntax_error(self, tmp_path):
         """测试验证有语法错误的文件"""
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         # 创建有语法错误的文件
         test_file = tmp_path / "syntax_error.py"
@@ -72,7 +72,7 @@ def test_pass():
     
     def test_validate_file_encoding_error(self, tmp_path):
         """测试验证有编码错误的文件"""
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         # 创建有编码问题的文件
         test_file = tmp_path / "binary.py"
@@ -85,7 +85,7 @@ def test_pass():
     
     def test_validate_file_permission_error(self, tmp_path):
         """测试验证权限错误的文件"""
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         # 创建文件并移除读权限
         test_file = tmp_path / "no_read.py"
@@ -101,7 +101,7 @@ def test_pass():
     
     def test_validate_after_optimization_syntax_error(self, tmp_path):
         """测试优化后验证发现语法错误"""
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         # 创建有语法错误的文件
         bad_file = tmp_path / "bad.py"
@@ -115,7 +115,7 @@ def test_pass():
     
     def test_validate_after_optimization_test_failure(self, tmp_path):
         """测试优化后验证测试失败"""
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         # 创建有效文件
         good_file = tmp_path / "good.py"
@@ -140,7 +140,7 @@ def test_pass():
         src_dir.mkdir()
         (src_dir / "__init__.py").write_text("")
         
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         # 这个测试可能成功也可能失败，取决于环境
         result = validator.quick_check()
@@ -149,7 +149,7 @@ def test_pass():
     
     def test_quick_check_timeout(self, tmp_path):
         """测试快速检查超时"""
-        validator = TestValidator(str(tmp_path))
+        validator = CodeValidator(str(tmp_path))
         
         with patch('subprocess.run') as mock_run:
             mock_run.side_effect = subprocess.TimeoutExpired(cmd='test', timeout=30)

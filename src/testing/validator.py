@@ -13,7 +13,7 @@ from src.config.manager import get_config
 logger = logging.getLogger(__name__)
 
 
-class TestValidator:
+class CodeValidator:
     """测试验证器"""
     
     def __init__(self, project_path: str = None):
@@ -353,7 +353,7 @@ def validate_optimization_result(
     Returns:
         (是否成功, 消息)
     """
-    validator = TestValidator(project_path)
+    validator = CodeValidator(project_path)
     result = validator.validate_after_optimization(modified_files)
     
     if result["success"]:
@@ -373,7 +373,7 @@ if __name__ == "__main__":
     print("🧪 测试验证器测试")
     print("=" * 50)
     
-    validator = TestValidator()
+    validator = CodeValidator()
     
     # 测试语法验证
     test_file = __file__

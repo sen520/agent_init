@@ -99,7 +99,7 @@ def validate_optimization(state: State) -> State:
     print("\n🧪 [验证] 测试优化结果...")
     
     try:
-        from src.testing.validator import TestValidator
+        from src.testing.validator import CodeValidator
         from src.utils.file_modifier import FileModifier
         
         # 获取修改过的文件
@@ -114,7 +114,7 @@ def validate_optimization(state: State) -> State:
             return state
         
         # 运行验证
-        validator = TestValidator(state.project_path)
+        validator = CodeValidator(state.project_path)
         result = validator.validate_after_optimization(modified_files)
         
         # 保存验证结果

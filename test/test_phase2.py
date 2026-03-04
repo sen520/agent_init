@@ -122,7 +122,7 @@ class TestLLMAnalyzeIssues:
 class TestValidateOptimization:
     """测试验证优化节点"""
     
-    @patch('src.nodes.phase2.TestValidator')
+    @patch('src.nodes.phase2.CodeValidator')
     def test_no_modified_files(self, mock_validator_class):
         """测试没有修改文件时"""
         state = State()
@@ -132,7 +132,7 @@ class TestValidateOptimization:
         
         assert "没有文件被修改" in result.logs[-1]
     
-    @patch('src.nodes.phase2.TestValidator')
+    @patch('src.nodes.phase2.CodeValidator')
     def test_validation_success(self, mock_validator_class):
         """测试验证成功"""
         mock_validator = Mock()
@@ -155,7 +155,7 @@ class TestValidateOptimization:
         assert result.validation_result['success']
         assert "验证通过" in result.logs[-1]
     
-    @patch('src.nodes.phase2.TestValidator')
+    @patch('src.nodes.phase2.CodeValidator')
     @patch('src.nodes.phase2.FileModifier')
     def test_validation_failure_with_rollback(self, mock_modifier_class, mock_validator_class):
         """测试验证失败并回滚"""
@@ -184,7 +184,7 @@ class TestValidateOptimization:
         assert "验证失败" in result.logs[-2]
         assert result.applied_changes == []  # 应该清空
     
-    @patch('src.nodes.phase2.TestValidator')
+    @patch('src.nodes.phase2.CodeValidator')
     def test_import_error(self, mock_validator_class):
         """测试导入错误时"""
         with patch.dict('sys.modules', {'src.testing.validator': None}):
