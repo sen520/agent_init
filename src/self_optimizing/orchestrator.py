@@ -200,7 +200,29 @@ class SelfOptimizingOrchestrator:
         print(f"🎯 目标文件数: {len(self.target_files)}")
         print(f"🔄 最大轮数: {self.max_rounds}")
         
-        overall_result = {
+        overall_result = self._init_optimization_result()
+        
+        # 执行多轮优化
+        for round_num in range(self.max_rounds):
+            round_result = self.run_self_optimization_round()
+            self._process_round_result(overall_result, round_result)
+            
+            # 检查是否提前结束
+            if self._should_stop_early(overall_result, round_result):
+                break
+            
+            # 短暂休息，避免过于激进的优化
+            time.sleep(1)
+        
+        # 处理达到最大轮数的情况
+        self._finalize_optimization(overall_result)
+        self._print_optimization_summary(overall_result)
+        
+        return overall_result
+    
+    def _init_optimization_result(self) -> Dict[str, Any]:
+        """初始化优化结果"""
+        return {
             "start_time": time.time(),
             "end_time": None,
             "total_rounds": 0,
@@ -211,40 +233,44 @@ class SelfOptimizingOrchestrator:
             "success": False,
             "stop_reason": ""
         }
+    
+    def _process_round_result(self, overall_result: Dict[str, Any], round_result: Dict[str, Any]):
+        """处理单轮优化结果"""
+        self.optimization_rounds.append(round_result)
+        overall_result["rounds"].append(round_result)
         
-        # 执行多轮优化
-        for round_num in range(self.max_rounds):
-            round_result = self.run_self_optimization_round()
-            self.optimization_rounds.append(round_result)
-            overall_result["rounds"].append(round_result)
-            
-            # 累计统计
-            overall_result["total_files_analyzed"] += round_result["files_analyzed"]
-            overall_result["total_issues_found"] += round_result["issues_found"]
-            overall_result["total_optimizations_applied"] += round_result["optimizations_applied"]
-            overall_result["total_rounds"] += 1
-            
-            # 如果本轮没有发现任何问题，提前结束
-            if round_result["issues_found"] == 0:
-                overall_result["stop_reason"] = "代码已达到理想质量"
-                overall_result["success"] = True
-                break
-            
-            # 如果本轮优化没有效果，也提前结束
-            if not round_result["success"] or round_result["optimizations_applied"] == 0:
-                overall_result["stop_reason"] = "优化策略已收敛"
-                overall_result["success"] = True
-                break
-            
-            # 短暂休息，避免过于激进的优化
-            time.sleep(1)
+        # 累计统计
+        overall_result["total_files_analyzed"] += round_result["files_analyzed"]
+        overall_result["total_issues_found"] += round_result["issues_found"]
+        overall_result["total_optimizations_applied"] += round_result["optimizations_applied"]
+        overall_result["total_rounds"] += 1
+    
+    def _should_stop_early(self, overall_result: Dict[str, Any], round_result: Dict[str, Any]) -> bool:
+        """检查是否应该提前结束优化"""
+        # 如果本轮没有发现任何问题，提前结束
+        if round_result["issues_found"] == 0:
+            overall_result["stop_reason"] = "代码已达到理想质量"
+            overall_result["success"] = True
+            return True
         
-        # 处理达到最大轮数的情况
+        # 如果本轮优化没有效果，也提前结束
+        if not round_result["success"] or round_result["optimizations_applied"] == 0:
+            overall_result["stop_reason"] = "优化策略已收敛"
+            overall_result["success"] = True
+            return True
+        
+        return False
+    
+    def _finalize_optimization(self, overall_result: Dict[str, Any]):
+        """完成优化循环"""
         if overall_result["total_rounds"] >= self.max_rounds:
             overall_result["stop_reason"] = "达到最大优化轮数"
             overall_result["success"] = True
         
         overall_result["end_time"] = time.time()
+    
+    def _print_optimization_summary(self, overall_result: Dict[str, Any]):
+        """打印优化总结"""
         optimization_duration = overall_result["end_time"] - overall_result["start_time"]
         
         # 生成优化报告
@@ -263,8 +289,6 @@ class SelfOptimizingOrchestrator:
         print(f"\n📋 各轮详情:")
         for i, round_result in enumerate(overall_result["rounds"], 1):
             print(f"   第{i}轮: 问题{round_result['issues_found']} → 优化{round_result['optimizations_applied']} ({'成功' if round_result['success'] else '无效果'})")
-        
-        return overall_result
     
     def self_validate(self) -> Dict[str, Any]:
         """自验证 - 确保优化后系统仍然正常工作"""
