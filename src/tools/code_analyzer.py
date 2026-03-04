@@ -93,7 +93,8 @@ class CodeAnalyzer:
         """获取文件基本统计信息"""
         try:
             size = os.path.getsize(file_path)
-        except:
+        except (OSError, IOError) as e:
+            logger.debug(f"无法获取文件大小 {file_path}: {e}")
             size = 0
             
         non_empty_lines = len([l for l in lines if l.strip()])

@@ -1,17 +1,18 @@
-import asyncio
-import os
-import sys
-import logging
+
 from dotenv import load_dotenv
-
-# 确保能够正确导入src模块
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from src.config.settings import settings
 from src.graph.base import build_graph, build_simple_graph, build_phase2_graph
 from src.state.base import State
 from src.utils.logger import create_logger
 from src.utils.logging_config import setup_colored_logging, get_logger
+import asyncio
+import logging
+import os
+import sys
+
+# 确保能够正确导入src模块
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 load_dotenv()
 

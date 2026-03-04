@@ -1,15 +1,18 @@
+from collections import defaultdict
+from pathlib import Path
+from src.tools.ast_parser import ASTParser
+import ast
+import os
+import pytest
+import sys
+import sys
+
 #!/usr/bin/env python3
 """
 测试 AST Parser - src/tools/ast_parser.py
 """
-import pytest
-import ast
 
-import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.tools.ast_parser import ASTParser
 
 
 class TestASTParser:
@@ -30,10 +33,12 @@ class TestASTParser:
         # 创建测试文件
         test_file = tmp_path / "test.py"
         test_file.write_text("""
+
 def hello():
     return "Hello"
 
 class MyClass:
+
     def method(self):
         pass
 """)
@@ -72,6 +77,7 @@ from collections import defaultdict
         parser = ASTParser()
         
         code = """
+
 def func1():
     pass
 
@@ -90,10 +96,12 @@ def func2(x, y):
         parser = ASTParser()
         
         code = """
+
 class Class1:
     pass
 
 class Class2:
+
     def method(self):
         pass
 """
@@ -108,6 +116,7 @@ class Class2:
         parser = ASTParser()
         
         code = """
+
 def simple():
     return 1
 

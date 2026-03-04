@@ -324,7 +324,8 @@ class SelfOptimizingOrchestrator:
         try:
             files = self.scanner.scan_python_files()
             return len(files) > 0
-        except:
+        except Exception as e:
+            logger.debug(f"测试文件扫描器失败: {e}")
             return False
     
     def _test_code_analyzer(self) -> bool:
@@ -340,7 +341,8 @@ class SelfOptimizingOrchestrator:
                 
             analysis = self.optimizer.analyze_file(test_file)
             return 'error' not in analysis
-        except:
+        except Exception as e:
+            logger.debug(f"测试代码分析器失败: {e}")
             return False
     
     def _test_optimization_strategies(self) -> bool:
@@ -350,7 +352,8 @@ class SelfOptimizingOrchestrator:
         
         try:
             return len(self.optimizer.strategies) >= 7  # 应该有7种策略
-        except:
+        except Exception as e:
+            logger.debug(f"测试优化策略失败: {e}")
             return False
     
     def _test_workflow_integration(self) -> bool:
@@ -361,7 +364,8 @@ class SelfOptimizingOrchestrator:
         try:
             # 简单测试：检查工作流是否存在
             return True
-        except:
+        except Exception as e:
+            logger.debug(f"测试工作流集成失败: {e}")
             return False
 
 

@@ -1,31 +1,34 @@
+from pathlib import Path
+from src.testing.validator import CodeValidator, validate_optimization_result
+import pytest
+import sys
+import tempfile
+
 #!/usr/bin/env python3
 """
 测试 CodeValidator 测试验证器
 """
-import pytest
-import tempfile
-from pathlib import Path
 
-import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.testing.validator import CodeValidator, validate_optimization_result
 
 
 class TestCodeValidator:
     """CodeValidator 测试类"""
     
     @pytest.fixture
+
     def temp_project(self):
         """创建临时项目"""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield Path(tmpdir)
     
     @pytest.fixture
+
     def valid_python_file(self, temp_project):
         """创建有效的 Python 文件"""
         file_path = temp_project / "valid.py"
         file_path.write_text("""
+
 def hello():
     return "Hello, World!"
 
@@ -35,10 +38,12 @@ if __name__ == "__main__":
         return str(file_path)
     
     @pytest.fixture
+
     def invalid_python_file(self, temp_project):
         """创建无效的 Python 文件"""
         file_path = temp_project / "invalid.py"
         file_path.write_text("""
+
 def broken(
     # 缺少右括号
     print("broken")
@@ -136,6 +141,7 @@ class TestValidateOptimizationResult:
     """测试便捷函数"""
     
     @pytest.fixture
+
     def temp_project(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             yield Path(tmpdir)

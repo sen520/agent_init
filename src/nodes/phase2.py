@@ -52,7 +52,8 @@ def llm_analyze_issues(state: State) -> State:
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     code = f.read()[:2000]  # 限制长度
-            except:
+            except (IOError, UnicodeDecodeError) as e:
+                logger.debug(f"无法读取文件 {file_path}: {e}")
                 code = ""
             
             # 使用 LLM 分析
