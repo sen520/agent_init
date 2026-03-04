@@ -49,9 +49,9 @@ class ConfigManager:
             except json.JSONDecodeError as e:
                 logger.error(f"配置文件解析错误: {e}")
                 self._config = self._default_config()
-            except ConfigValidationError as e:
-                logger.error(f"配置验证失败: {e}")
-                self._config = self._default_config()
+            except ConfigValidationError:
+                # 验证错误应该传播，让用户知道配置有问题
+                raise
         else:
             logger.warning(f"配置文件不存在: {self.config_path}，使用默认配置")
             self._config = self._default_config()
