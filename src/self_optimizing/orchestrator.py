@@ -4,12 +4,15 @@
 """
 import os
 import sys
+import logging
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 import time
 
 # 添加当前项目到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+logger = logging.getLogger(__name__)
 
 
 class SelfOptimizingOrchestrator:
@@ -40,7 +43,7 @@ class SelfOptimizingOrchestrator:
             self.optimizer = CodeOptimizer()
             self.workflow = optimization_app
             
-            print("✅ 自优化组件初始化成功")
+            logger.info("✅ 自优化组件初始化成功")
             
         except ImportError as e:
             raise ImportError(f"无法初始化自优化组件: {e}")
@@ -65,12 +68,12 @@ class SelfOptimizingOrchestrator:
             if full_path.exists():
                 self.target_files.append(str(full_path))
         
-        print(f"📁 识别了 {len(self.target_files)} 个自优化目标文件")
+        logger.info(f"📁 识别了 {len(self.target_files)} 个自优化目标文件")
     
     def run_self_optimization_round(self) -> Dict[str, Any]:
         """执行一轮自优化"""
         round_number = len(self.optimization_rounds) + 1
-        print(f"\n🔄 开始第 {round_number} 轮自优化...")
+        logger.info(f"🔄 开始第 {round_number} 轮自优化...")
         
         round_result = {
             "round": round_number,
@@ -106,7 +109,7 @@ class SelfOptimizingOrchestrator:
                         "analysis": analysis
                     })
                 
-                print(f"   📄 {os.path.basename(file_path)}: {issues_in_file} 个问题")
+                logger.info(f"   📄 {os.path.basename(file_path)}: {issues_in_file} 个问题")
                 
             except Exception as e:
                 round_result["errors"].append(f"处理 {file_path} 异常: {e}")
@@ -115,7 +118,7 @@ class SelfOptimizingOrchestrator:
         
         # 如果没有问题，结束优化
         if total_issues == 0:
-            print("   ✅ 代码质量良好，无需优化")
+            logger.info("   ✅ 代码质量良好，无需优化")
             round_result["success"] = True
             return round_result
         
@@ -129,13 +132,13 @@ class SelfOptimizingOrchestrator:
             file_path = file_info["file"]
             
             try:
-                print(f"   🔧 优化: {os.path.basename(file_path)}")
+                logger.info(f"   🔧 优化: {os.path.basename(file_path)}")
                 result = self.optimizer.optimize_file(file_path, optimization_strategies)
                 
                 if result.get('optimization_applied'):
                     changes = result.get('changes_count', 0)
                     total_optimizations += changes
-                    print(f"      ✅ 应用 {changes} 处优化")
+                    logger.info(f"      ✅ 应用 {changes} 处优化")
                     
                     # 记录具体策略
                     applied = result.get('strategies_applied', [])
@@ -143,7 +146,7 @@ class SelfOptimizingOrchestrator:
                         if strategy not in round_result["strategies_used"]:
                             round_result["strategies_used"].append(strategy)
                 else:
-                    print(f"      ℹ️ 无需优化或优化失败")
+                    logger.info(f"      ℹ️ 无需优化或优化失败")
                     error = result.get('error', '未知原因')
                     if error:
                         round_result["errors"].append(f"优化 {file_path}: {error}")
@@ -156,9 +159,9 @@ class SelfOptimizingOrchestrator:
         # 确定是否成功
         if total_optimizations == 0:
             round_result["success"] = False
-            print(f"   ⚠️ 第 {round_number} 轮优化未产生实际效果")
+            logger.warning(f"   ⚠️ 第 {round_number} 轮优化未产生实际效果")
         else:
-            print(f"   ✅ 第 {round_number} 轮完成: {total_optimizations} 处优化")
+            logger.info(f"   ✅ 第 {round_number} 轮完成: {total_optimizations} 处优化")
         
         return round_result
     
@@ -172,7 +175,7 @@ class SelfOptimizingOrchestrator:
                 'empty_line_optimizer', 
                 'import_optimizer'
             ]
-            print(f"   📋 第1轮策略: 安全优先 ({', '.join(strategies)})")
+            logger.info(f"   📋 第1轮策略: 安全优先 ({', '.join(strategies)})")
             return strategies
         
         # 第2轮：轻度优化
@@ -181,7 +184,7 @@ class SelfOptimizingOrchestrator:
                 'line_length_optimizer',
                 'variable_naming_optimizer'
             ]
-            print(f"   📋 第2轮策略: 轻度优化 ({', '.join(strategies)})")
+            logger.info(f"   📋 第2轮策略: 轻度优化 ({', '.join(strategies)})")
             return strategies
         
         # 第3轮及以后：高级优化
@@ -190,15 +193,15 @@ class SelfOptimizingOrchestrator:
                 'function_length_optimizer',
                 'duplicate_code_optimizer'
             ]
-            print(f"   📋 第{round_number}轮策略: 高级优化 ({', '.join(strategies)})")
+            logger.info(f"   📋 第{round_number}轮策略: 高级优化 ({', '.join(strategies)})")
             return strategies
     
     def run_full_self_optimization(self) -> Dict[str, Any]:
         """运行完整的自优化循环"""
-        print("🚀 开始自优化循环...")
-        print(f"📁 项目路径: {self.project_path}")
-        print(f"🎯 目标文件数: {len(self.target_files)}")
-        print(f"🔄 最大轮数: {self.max_rounds}")
+        logger.info("🚀 开始自优化循环...")
+        logger.info(f"📁 项目路径: {self.project_path}")
+        logger.info(f"🎯 目标文件数: {len(self.target_files)}")
+        logger.info(f"🔄 最大轮数: {self.max_rounds}")
         
         overall_result = self._init_optimization_result()
         
@@ -274,25 +277,25 @@ class SelfOptimizingOrchestrator:
         optimization_duration = overall_result["end_time"] - overall_result["start_time"]
         
         # 生成优化报告
-        print(f"\n" + "="*60)
-        print("🏆 自优化循环完成！")
-        print(f"📊 总体统计:")
-        print(f"   ⏱️  用时: {optimization_duration:.2f} 秒")
-        print(f"   🔄 优化轮数: {overall_result['total_rounds']}")
-        print(f"   📁 分析文件: {overall_result['total_files_analyzed']}")
-        print(f"   🔍 发现问题: {overall_result['total_issues_found']}")
-        print(f"   🔧 应用优化: {overall_result['total_optimizations_applied']}")
-        print(f"   ✅ 整体成功: {overall_result['success']}")
-        print(f"   🛑 停止原因: {overall_result['stop_reason']}")
+        logger.info("="*60)
+        logger.info("🏆 自优化循环完成！")
+        logger.info(f"📊 总体统计:")
+        logger.info(f"   ⏱️  用时: {optimization_duration:.2f} 秒")
+        logger.info(f"   🔄 优化轮数: {overall_result['total_rounds']}")
+        logger.info(f"   📁 分析文件: {overall_result['total_files_analyzed']}")
+        logger.info(f"   🔍 发现问题: {overall_result['total_issues_found']}")
+        logger.info(f"   🔧 应用优化: {overall_result['total_optimizations_applied']}")
+        logger.info(f"   ✅ 整体成功: {overall_result['success']}")
+        logger.info(f"   🛑 停止原因: {overall_result['stop_reason']}")
         
         # 显示每轮详情
-        print(f"\n📋 各轮详情:")
+        logger.info(f"📋 各轮详情:")
         for i, round_result in enumerate(overall_result["rounds"], 1):
-            print(f"   第{i}轮: 问题{round_result['issues_found']} → 优化{round_result['optimizations_applied']} ({'成功' if round_result['success'] else '无效果'})")
+            logger.info(f"   第{i}轮: 问题{round_result['issues_found']} → 优化{round_result['optimizations_applied']} ({'成功' if round_result['success'] else '无效果'})")
     
     def self_validate(self) -> Dict[str, Any]:
         """自验证 - 确保优化后系统仍然正常工作"""
-        print("🧪 开始自验证...")
+        logger.info("🧪 开始自验证...")
         
         validation_result = {
             "start_time": time.time(),
@@ -314,29 +317,29 @@ class SelfOptimizingOrchestrator:
         for test_func in tests:
             test_name = test_func.__name__
             try:
-                print(f"   🧪 {test_name}...")
+                logger.info(f"   🧪 {test_name}...")
                 result = test_func()
                 if result:
                     validation_result["tests_passed"] += 1
                     validation_result["test_results"].append({"name": test_name, "status": "PASSED"})
-                    print(f"      ✅ 通过")
+                    logger.info(f"      ✅ 通过")
                 else:
                     validation_result["tests_failed"] += 1
                     validation_result["test_results"].append({"name": test_name, "status": "FAILED"})
-                    print(f"      ❌ 失败")
+                    logger.info(f"      ❌ 失败")
                     
             except Exception as e:
                 validation_result["tests_failed"] += 1
                 validation_result["test_results"].append({"name": test_name, "status": "ERROR", "error": str(e)})
-                print(f"      ❌ 异常: {e}")
+                logger.error(f"      ❌ 异常: {e}")
         
         validation_result["end_time"] = time.time()
         validation_result["success"] = validation_result["tests_failed"] == 0
         
-        print(f"\n📊 自验证结果:")
-        print(f"   ✅ 通过: {validation_result['tests_passed']}")
-        print(f"   ❌ 失败: {validation_result['tests_failed']}")
-        print(f"   🎯 整体: {'成功' if validation_result['success'] else '失败'}")
+        logger.info(f"📊 自验证结果:")
+        logger.info(f"   ✅ 通过: {validation_result['tests_passed']}")
+        logger.info(f"   ❌ 失败: {validation_result['tests_failed']}")
+        logger.info(f"   🎯 整体: {'成功' if validation_result['success'] else '失败'}")
         
         return validation_result
     

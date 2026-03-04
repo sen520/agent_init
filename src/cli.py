@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import sys
 import os
+import logging
 from pathlib import Path
 
 # 添加项目路径
@@ -16,30 +17,32 @@ from src.graph.base import optimization_app, create_optimization_workflow
 from src.self_optimizing.orchestrator import run_self_optimization
 from src.strategies.optimization_strategies import CodeOptimizer
 
+logger = logging.getLogger(__name__)
+
 
 def analyze_command(args):
     """分析命令"""
-    print(f"🔍 分析项目: {args.path}")
+    logger.info(f"🔍 分析项目: {args.path}")
     
     async def run_analysis():
         try:
             state = State(project_path=args.path)
             result = await optimization_app.ainvoke(state)
             
-            print("\n📊 分析结果:")
-            print(f"   📁 分析文件数: {result['total_files_analyzed']}")
-            print(f"   🔍 发现问题数: {result['total_issues_found']}")
-            print(f"   📝 变更记录数: {len(result['applied_changes'])}")
+            logger.info("📊 分析结果:")
+            logger.info(f"   📁 分析文件数: {result['total_files_analyzed']}")
+            logger.info(f"   🔍 发现问题数: {result['total_issues_found']}")
+            logger.info(f"   📝 变更记录数: {len(result['applied_changes'])}")
             
             if result['errors']:
-                print(f"\n⚠️  错误信息:")
+                logger.warning(f"\n⚠️  错误信息:")
                 for error in result['errors'][:5]:
-                    print(f"   • {error}")
+                    logger.warning(f"   • {error}")
             
-            print("\n🏆 分析完成！")
+            logger.info("🏆 分析完成！")
             
         except Exception as e:
-            print(f"❌ 分析失败: {e}")
+            logger.error(f"❌ 分析失败: {e}")
             return 1
         return 0
     
@@ -48,7 +51,7 @@ def analyze_command(args):
 
 def optimize_command(args):
     """优化命令"""
-    print(f"🔧 优化项目: {args.path}")
+    logger.info(f"🔧 优化项目: {args.path}")
     
     async def run_optimization():
         try:
@@ -60,21 +63,21 @@ def optimize_command(args):
             
             result = await app.ainvoke(state)
             
-            print("\n📊 优化结果:")
-            print(f"   📁 分析文件数: {result['total_files_analyzed']}")
-            print(f"   🔍 发现问题数: {result['total_issues_found']}")
-            print(f"   🔧 应用优化数: {result['total_optimizations_applied']}")
-            print(f"   📝 变更记录数: {len(result['applied_changes'])}")
+            logger.info("📊 优化结果:")
+            logger.info(f"   📁 分析文件数: {result['total_files_analyzed']}")
+            logger.info(f"   🔍 发现问题数: {result['total_issues_found']}")
+            logger.info(f"   🔧 应用优化数: {result['total_optimizations_applied']}")
+            logger.info(f"   📝 变更记录数: {len(result['applied_changes'])}")
             
             if result['applied_changes']:
-                print(f"\n✨ 应用的主要优化:")
+                logger.info("✨ 应用的主要优化:")
                 for i, change in enumerate(result['applied_changes'][:10], 1):
-                    print(f"   {i}. {change}")
+                    logger.info(f"   {i}. {change}")
             
-            print("\n🏆 优化完成！")
+            logger.info("🏆 优化完成！")
             
         except Exception as e:
-            print(f"❌ 优化失败: {e}")
+            logger.error(f"❌ 优化失败: {e}")
             return 1
         return 0
     
@@ -83,7 +86,7 @@ def optimize_command(args):
 
 def self_opt_command(args):
     """自优化命令"""
-    print(f"🤖 自优化项目: {args.path}")
+    logger.info(f"🤖 自优化项目: {args.path}")
     
     try:
         result = run_self_optimization(args.path)
@@ -91,27 +94,27 @@ def self_opt_command(args):
         opt_result = result["optimization"]
         val_result = result["validation"]
         
-        print("\n📊 自优化结果:")
-        print(f"   🔄 优化轮数: {opt_result['total_rounds']}")
-        print(f"   📁 分析文件数: {opt_result['total_files_analyzed']}")
-        print(f"   🔍 发现问题数: {opt_result['total_issues_found']}")
-        print(f"   🔧 应用优化数: {opt_result['total_optimizations_applied']}")
+        logger.info("📊 自优化结果:")
+        logger.info(f"   🔄 优化轮数: {opt_result['total_rounds']}")
+        logger.info(f"   📁 分析文件数: {opt_result['total_files_analyzed']}")
+        logger.info(f"   🔍 发现问题数: {opt_result['total_issues_found']}")
+        logger.info(f"   🔧 应用优化数: {opt_result['total_optimizations_applied']}")
         
-        print(f"\n📊 验证结果:")
-        print(f"   ✅ 测试通过: {val_result['tests_passed']}")
-        print(f"   ❌ 测试失败: {val_result['tests_failed']}")
-        print(f"   🎯 验证成功: {'是' if val_result['success'] else '否'}")
+        logger.info("📊 验证结果:")
+        logger.info(f"   ✅ 测试通过: {val_result['tests_passed']}")
+        logger.info(f"   ❌ 测试失败: {val_result['tests_failed']}")
+        logger.info(f"   🎯 验证成功: {'是' if val_result['success'] else '否'}")
         
         # 显示报告文件
         if hasattr(val_result, 'report_file'):
-            print(f"\n📄 详细报告: {val_result.get('report_file', 'self_optimization_report.md')}")
+            logger.info(f"📄 详细报告: {val_result.get('report_file', 'self_optimization_report.md')}")
         
-        print("\n🏆 自优化完成！")
+        logger.info("🏆 自优化完成！")
         
     except Exception as e:
-        print(f"❌ 自优化失败: {e}")
+        logger.error(f"❌ 自优化失败: {e}")
         import traceback
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
         return 1
     
     return 0
@@ -119,27 +122,27 @@ def self_opt_command(args):
 
 def strategies_command(args):
     """策略列表命令"""
-    print("🎛️  可用优化策略:")
+    logger.info("🎛️  可用优化策略:")
     
     try:
         optimizer = CodeOptimizer()
         strategies = optimizer.strategies
         
         for i, strategy in enumerate(strategies, 1):
-            print(f"\n{i}. **{strategy.name}**")
-            print(f"   描述: {strategy.description}")
-            print(f"   类型: {type(strategy).__name__}")
+            logger.info(f"{i}. **{strategy.name}**")
+            logger.info(f"   描述: {strategy.description}")
+            logger.info(f"   类型: {type(strategy).__name__}")
         
-        print(f"\n📊 总计: {len(strategies)} 种优化策略")
+        logger.info(f"📊 总计: {len(strategies)} 种优化策略")
         
-        print("\n💡 使用建议:")
-        print("   • 安全策略: comment_optimizer, empty_line_optimizer")
-        print("   • 标准策略: import_optimizer, line_length_optimizer")  
-        print("   • 高级策略: function_length_optimizer, variable_naming_optimizer")
-        print("   • 检测策略: duplicate_code_optimizer")
+        logger.info("💡 使用建议:")
+        logger.info("   • 安全策略: comment_optimizer, empty_line_optimizer")
+        logger.info("   • 标准策略: import_optimizer, line_length_optimizer")  
+        logger.info("   • 高级策略: function_length_optimizer, variable_naming_optimizer")
+        logger.info("   • 检测策略: duplicate_code_optimizer")
         
     except Exception as e:
-        print(f"❌ 获取策略列表失败: {e}")
+        logger.error(f"❌ 获取策略列表失败: {e}")
         return 1
     
     return 0
@@ -147,7 +150,7 @@ def strategies_command(args):
 
 def demo_command(args):
     """演示命令"""
-    print("🎬 运行演示...")
+    logger.info("🎬 运行演示...")
     
     try:
         # 清理可能的演示文件
@@ -161,7 +164,7 @@ def demo_command(args):
         self_optimization_demo()
         
     except Exception as e:
-        print(f"❌ 演示失败: {e}")
+        logger.error(f"❌ 演示失败: {e}")
         return 1
     
     return 0
