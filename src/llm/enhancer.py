@@ -71,7 +71,8 @@ class LLMEnhancer:
             return f"⚠️  {operation} 失败: 请求太频繁，请稍后再试"
         elif isinstance(e, APIError):
             logger.error(f"{operation} 失败: API 错误 - {e}")
-            return f"❌ {operation} 失败: API 服务错误 ({e.status_code})"
+            status_code = getattr(e, 'status_code', 'unknown')
+            return f"❌ {operation} 失败: API 服务错误 ({status_code})"
         elif isinstance(e, TimeoutError):
             logger.warning(f"{operation} 失败: 请求超时")
             return f"⚠️  {operation} 失败: 请求超时，请重试"
