@@ -1,7 +1,10 @@
 import re
+import logging
 import numpy as np
 from transformers import AutoTokenizer
 from sentence_transformers import SentenceTransformer
+
+logger = logging.getLogger(__name__)
 
 
 ## 1. 基于语义分割
@@ -210,18 +213,21 @@ def split_markdown(text):
 
     # 测试 token分割
     token_chunks = split_by_tokens(test_text, tokenizer, chunk_size=128, chunk_overlap=10)
-    print("=== 1. 基于 Token Size 的分割结果 ===")
-    for i, chunk in enumerate(token_chunks, 1): print(f"{i}. {chunk}")
-    print("-" * 60)
+    logger.info("=== 1. 基于 Token Size 的分割结果 ===")
+    for i, chunk in enumerate(token_chunks, 1):
+        logger.info(f"{i}. {chunk}")
+    logger.info("-" * 60)
 
     # 测试markdown分割
     md_chunks = split_by_markdown_recursive(test_text, tokenizer, chunk_size=128)
-    print("\n=== 2. 基于 Markdown 递归的分割结果 ===")
-    for i, chunk in enumerate(md_chunks, 1): print(f"{i}. {chunk}")
-    print("-" * 60)
+    logger.info("\n=== 2. 基于 Markdown 递归的分割结果 ===")
+    for i, chunk in enumerate(md_chunks, 1):
+        logger.info(f"{i}. {chunk}")
+    logger.info("-" * 60)
 
     # 测试基于语义分割
     semantic_chunks = split_by_semantic(test_text, model, tokenizer, chunk_size=128, similarity_threshold=0.7)
-    print("\n=== 3. 基于语义的分割结果 ===")
-    for i, chunk in enumerate(semantic_chunks, 1): print(f"{i}. {chunk}")
-    print("-" * 60)
+    logger.info("\n=== 3. 基于语义的分割结果 ===")
+    for i, chunk in enumerate(semantic_chunks, 1):
+        logger.info(f"{i}. {chunk}")
+    logger.info("-" * 60)

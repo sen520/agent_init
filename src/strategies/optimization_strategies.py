@@ -5,10 +5,13 @@
 import ast
 import os
 import re
+import logging
 from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 
 from src.config.manager import get_config
+
+logger = logging.getLogger(__name__)
 
 
 class OptimizationStrategy:
@@ -850,40 +853,40 @@ def optimize_code_file(file_path: str, strategies: Optional[List[str]] = None) -
 
 if __name__ == "__main__":
     # 测试优化策略
-    print("🔧 代码优化策略测试")
-    print("=" * 60)
+    logger.info("🔧 代码优化策略测试")
+    logger.info("=" * 60)
     
     # 测试当前文件
     test_file = __file__
     
-    print("1. 分析优化潜力...")
+    logger.info("1. 分析优化潜力...")
     analysis = analyze_code_for_optimization(test_file)
     
     if 'error' in analysis:
-        print(f"❌ 分析失败: {analysis['error']}")
+        logger.info(f"❌ 分析失败: {analysis['error']}")
     else:
-        print(f"✅ 分析完成:")
-        print(f"   文件: {os.path.basename(test_file)}")
-        print(f"   总行数: {analysis['content_stats']['lines']}")
-        print(f"   发现问题: {analysis['total_issues']} 个")
+        logger.info(f"✅ 分析完成:")
+        logger.info(f"   文件: {os.path.basename(test_file)}")
+        logger.info(f"   总行数: {analysis['content_stats']['lines']}")
+        logger.info(f"   发现问题: {analysis['total_issues']} 个")
         
         if analysis.get('optimizable_strategies'):
-            print(f"\n📋 可优化策略:")
+            logger.info(f"\n📋 可优化策略:")
             for strategy in analysis['optimizable_strategies']:
-                print(f"   - {strategy['name']}: {strategy['issues_count']} 个问题")
-                print(f"     {strategy['description']}")
+                logger.info(f"   - {strategy['name']}: {strategy['issues_count']} 个问题")
+                logger.info(f"     {strategy['description']}")
         
-        print("\n2. 尝试应用优化...")
+        logger.info("\n2. 尝试应用优化...")
         # 测试多个新策略
         test_strategies = ['comment_optimizer', 'empty_line_optimizer', 'variable_naming_optimizer']
         result = optimize_code_file(test_file, test_strategies)
         
         if result.get('optimization_applied'):
-            print(f"✅ 优化完成:")
-            print(f"   变更数: {result['changes_count']}")
-            print(f"   备份文件: {test_file}.backup")
-            print(f"   应用的策略: {', '.join(result['strategies_applied'])}")
+            logger.info(f"✅ 优化完成:")
+            logger.info(f"   变更数: {result['changes_count']}")
+            logger.info(f"   备份文件: {test_file}.backup")
+            logger.info(f"   应用的策略: {', '.join(result['strategies_applied'])}")
         else:
-            print(f"ℹ️ 未应用优化: {result.get('error', '无需要优化内容')}")
+            logger.info(f"ℹ️ 未应用优化: {result.get('error', '无需要优化内容')}")
     
-    print("\n✅ 优化策略测试完成")
+    logger.info("\n✅ 优化策略测试完成")

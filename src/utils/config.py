@@ -2,9 +2,12 @@
 配置管理模块 - 统一管理项目配置
 """
 import os
+import logging
 import yaml
 from typing import Dict, List, Any, Optional
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class Config:
@@ -47,7 +50,7 @@ class Config:
             if os.path.exists(config_path):
                 self._load_from_file(config_path)
             else:
-                print(f"⚠️ 配置文件不存在: {config_path}")
+                logger.info(f"⚠️ 配置文件不存在: {config_path}")
         else:
             # 尝试从默认位置加载
             default_paths = [
@@ -69,10 +72,10 @@ class Config:
             
             # 深度合并配置
             self._deep_merge(self._config, file_config)
-            print(f"✅ 已加载配置文件: {file_path}")
+            logger.info(f"✅ 已加载配置文件: {file_path}")
             
         except Exception as e:
-            print(f"⚠️ 加载配置文件失败 {file_path}: {e}")
+            logger.info(f"⚠️ 加载配置文件失败 {file_path}: {e}")
     
     def _deep_merge(self, base: dict, update: dict):
         """深度合并字典"""
@@ -145,8 +148,8 @@ def load_config(config_path: str):
 # 使用示例
 if __name__ == "__main__":
     config = get_config()
-    print("🔧 配置信息:")
-    print(f"   最大行长度: {config.get_max_line_length()}")
-    print(f"   最大函数长度: {config.get_max_function_length()}")
-    print(f"   启用备份: {config.is_backup_enabled()}")
-    print(f"   默认策略组: {config.get_strategy_group('default')}")
+    logger.info("🔧 配置信息:")
+    logger.info(f"   最大行长度: {config.get_max_line_length()}")
+    logger.info(f"   最大函数长度: {config.get_max_function_length()}")
+    logger.info(f"   启用备份: {config.is_backup_enabled()}")
+    logger.info(f"   默认策略组: {config.get_strategy_group('default')}")

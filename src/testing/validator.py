@@ -370,21 +370,21 @@ def validate_optimization_result(
 if __name__ == "__main__":
     # 测试验证器
     logging.basicConfig(level=logging.INFO)
-    print("🧪 测试验证器测试")
-    print("=" * 50)
+    logger.info("🧪 测试验证器测试")
+    logger.info("=" * 50)
     
     validator = CodeValidator()
     
     # 测试语法验证
     test_file = __file__
     result = validator.validate_file(test_file)
-    print(f"语法验证: {'✅ 通过' if result['valid'] else '❌ 失败'}")
+    logger.info(f"语法验证: {'✅ 通过' if result['valid'] else '❌ 失败'}")
     if not result['valid']:
-        print(f"  错误: {result['error']}")
+        logger.info(f"  错误: {result['error']}")
     
     # 测试 pytest
-    print("\n运行测试...")
+    logger.info("\n运行测试...")
     test_result = validator.run_tests(verbose=False)
-    print(f"测试结果: {test_result['passed']} passed, {test_result['failed']} failed")
+    logger.info(f"测试结果: {test_result['passed']} passed, {test_result['failed']} failed")
     if test_result['failed'] > 0:
-        print(f"  失败测试: {test_result['failed_tests']}")
+        logger.info(f"  失败测试: {test_result['failed_tests']}")

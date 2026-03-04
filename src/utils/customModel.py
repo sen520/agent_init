@@ -96,9 +96,9 @@ class CustomEmbedding(Embeddings):
                 model_name_or_path=self.model_name,
                 device=self.device
             )
-            print(f"✅ 本地 Embedding 模型加载完成: {self.model_name}")
+            logger.info(f"✅ 本地 Embedding 模型加载完成: {self.model_name}")
         elif self.api_url:
-            print(f"✅ 远程 Embedding 服务配置完成: {self.api_url}")
+            logger.info(f"✅ 远程 Embedding 服务配置完成: {self.api_url}")
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """
@@ -140,8 +140,8 @@ if __name__ == '__main__':
     model_name = 'qwen/qwen3-8b'
     llm = CustomModel(api_url=api_url, model_name=model_name)
     result = llm.invoke('你是谁')
-    print(result)
+    logger.info(result)
 
     emb = CustomEmbedding(model_name='Qwen3-Embedding-8B', use_local=False, api_url='http://127.0.0.1:5000')
     result = emb.embed_query('你是谁')
-    print(result)
+    logger.info(result)

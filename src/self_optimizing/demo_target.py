@@ -5,23 +5,26 @@
 
 import os,sys,re
 import json
+import logging
 from typing import Dict, List
+
+logger = logging.getLogger(__name__)
 
 #TODO fix this
 def very_long_function_that_should_be_split():
     x=1
     if x>0:
-        print("test")
+        logger.info("test")
     if x<10:
-        print("test2")    
+        logger.info("test2")    
     if x>0:
-        print("test")
+        logger.info("test")
     if x<10:
-        print("test2")    
+        logger.info("test2")    
     if x>0:
-        print("test")
+        logger.info("test")
     if x<10:
-        print("test2")    
+        logger.info("test2")    
     return x
 
 #
@@ -33,15 +36,15 @@ def another_function():
 def duplicate_function():
     x=1
     if x>0:
-        print("test")
+        logger.info("test")
     if x<10:
-        print("test2")    
+        logger.info("test2")    
     return x
 
 def duplicate_function_copy():
     x=1
     if x>0:
-        print("test")
+        logger.info("test")
     if x<10:
-        print("test2")    
+        logger.info("test2")    
     return x

@@ -1,6 +1,9 @@
 from typing import Dict, List, Any, Optional
+import logging
 from pydantic import BaseModel, Field
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 class CodeFileMetrics(BaseModel):
@@ -119,4 +122,4 @@ class State(BaseModel):
     def add_error(self, error: str):
         """添加错误消息"""
         self.errors.append(error)
-        print(f"❌ 错误: {error}")
+        logger.info(f"❌ 错误: {error}")

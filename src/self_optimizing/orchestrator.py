@@ -414,8 +414,8 @@ def run_self_optimization(project_path: str = ".") -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    print("🚀 自优化编排器演示")
-    print("=" * 60)
+    logger.info("🚀 自优化编排器演示")
+    logger.info("=" * 60)
     
     try:
         result = run_self_optimization(".")
@@ -423,17 +423,16 @@ if __name__ == "__main__":
         opt_result = result["optimization"]
         val_result = result["validation"]
         
-        print(f"\n🎯 最终总结:")
-        print(f"   优化轮数: {opt_result['total_rounds']}")
-        print(f"   应用变更: {opt_result['total_optimizations_applied']}")
-        print(f"   自验证: {'通过' if val_result['success'] else '失败'}")
+        logger.info(f"🎯 最终总结:")
+        logger.info(f"   优化轮数: {opt_result['total_rounds']}")
+        logger.info(f"   应用变更: {opt_result['total_optimizations_applied']}")
+        logger.info(f"   自验证: {'通过' if val_result['success'] else '失败'}")
         
         if opt_result["total_optimizations_applied"] > 0:
-            print("✨ 系统成功优化了自己的代码！")
+            logger.info("✨ 系统成功优化了自己的代码！")
         else:
-            print("💡 系统代码质量已经很好")
+            logger.info("💡 系统代码质量已经很好")
             
     except Exception as e:
-        print(f"❌ 自优化过程异常: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"❌ 自优化过程异常: {e}")
+        logger.error(traceback.format_exc())

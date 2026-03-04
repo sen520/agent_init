@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional, Union, Tuple
+import logging
 import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
@@ -11,6 +12,8 @@ from qdrant_client.models import (
     SearchParams,
 )
 from qdrant_client.http.exceptions import UnexpectedResponse, ApiException
+
+logger = logging.getLogger(__name__)
 
 
 class QdrantVectorDB:
@@ -74,13 +77,13 @@ class QdrantVectorDB:
                         distance=self.distance,
                     ),
                 )
-                print(f"集合 {self.collection_name} 创建成功")
+                logger.info(f"集合 {self.collection_name} 创建成功")
                 return True
             else:
-                print(f"集合 {self.collection_name} 已存在")
+                logger.info(f"集合 {self.collection_name} 已存在")
                 return False
         except Exception as e:
-            print(f"创建集合失败: {e}")
+            logger.info(f"创建集合失败: {e}")
             raise
 
     def create_collection(
@@ -102,7 +105,7 @@ class QdrantVectorDB:
         """
         try:
             if self.client.collection_exists(collection_name=collection_name):
-                print(f"集合 {collection_name} 已存在，跳过创建")
+                logger.info(f"集合 {collection_name} 已存在，跳过创建")
                 return False
 
             self.client.create_collection(
@@ -112,10 +115,10 @@ class QdrantVectorDB:
                     distance=distance,
                 ),
             )
-            print(f"集合 {collection_name} 创建成功")
+            logger.info(f"集合 {collection_name} 创建成功")
             return True
         except Exception as e:
-            print(f"创建集合 {collection_name} 失败: {e}")
+            logger.info(f"创建集合 {collection_name} 失败: {e}")
             raise
 
     def delete_collection(self, collection_name: Optional[str] = None) -> bool:
@@ -132,13 +135,13 @@ class QdrantVectorDB:
         try:
             if self.client.collection_exists(collection_name=collection_name):
                 self.client.delete_collection(collection_name=collection_name)
-                print(f"集合 {collection_name} 删除成功")
+                logger.info(f"集合 {collection_name} 删除成功")
                 return True
             else:
-                print(f"集合 {collection_name} 不存在")
+                logger.info(f"集合 {collection_name} 不存在")
                 return False
         except Exception as e:
-            print(f"删除集合 {collection_name} 失败: {e}")
+            logger.info(f"删除集合 {collection_name} 失败: {e}")
             raise
 
     def add_vectors(
@@ -187,11 +190,11 @@ class QdrantVectorDB:
 
             # 获取添加的ID列表
             added_ids = [point.id for point in points] if not ids else ids
-            print(f"成功添加 {len(added_ids)} 个向量到集合 {collection_name}")
+            logger.info(f"成功添加 {len(added_ids)} 个向量到集合 {collection_name}")
             return added_ids
 
         except Exception as e:
-            print(f"添加向量失败: {e}")
+            logger.info(f"添加向量失败: {e}")
             raise
 
     def delete_vectors(
@@ -215,10 +218,10 @@ class QdrantVectorDB:
                 collection_name=collection_name,
                 points_selector=ids,
             )
-            print(f"成功删除 {len(ids)} 个向量")
+            logger.info(f"成功删除 {len(ids)} 个向量")
             return True
         except Exception as e:
-            print(f"删除向量失败: {e}")
+            logger.info(f"删除向量失败: {e}")
             raise
 
     def search_vectors(
@@ -268,7 +271,7 @@ class QdrantVectorDB:
                 for res in results.points
             ]
 
-            print(f"搜索到 {len(formatted)} 个相似向量")
+            logger.info(f"搜索到 {len(formatted)} 个相似向量")
             return formatted
 
         except ApiException as e:
@@ -314,11 +317,11 @@ class QdrantVectorDB:
                 ]
                 return formatted
             else:
-                print(f"未找到ID为 {vector_ids} 的向量")
+                logger.info(f"未找到ID为 {vector_ids} 的向量")
                 return []
 
         except Exception as e:
-            print(f"获取向量失败: {e}")
+            logger.info(f"获取向量失败: {e}")
             raise
 
     def update_vector_payload(
@@ -345,10 +348,10 @@ class QdrantVectorDB:
                 payload=payload,
                 points=[vector_id],
             )
-            print(f"成功更新ID为 {vector_id} 的向量元数据")
+            logger.info(f"成功更新ID为 {vector_id} 的向量元数据")
             return True
         except Exception as e:
-            print(f"更新向量元数据失败: {e}")
+            logger.info(f"更新向量元数据失败: {e}")
             raise
 
     def get_collection_stats(self, collection_name: Optional[str] = None) -> Dict:
@@ -405,17 +408,17 @@ class QdrantVectorDB:
 
         except UnexpectedResponse as e:
             if e.status_code == 404:
-                print(f"集合 {collection_name} 不存在")
+                logger.info(f"集合 {collection_name} 不存在")
                 return {}
             else:
                 raise
         except Exception as e:
-            print(f"获取集合统计信息失败: {e}")
+            logger.info(f"获取集合统计信息失败: {e}")
             raise
 
     def close(self):
         """关闭客户端连接（QdrantClient为无状态，此方法主要用于资源清理）"""
-        print("Qdrant客户端连接已关闭")
+        logger.info("Qdrant客户端连接已关闭")
         # QdrantClient的连接是HTTP短连接，无需显式关闭，此处仅作占位
         pass
 
@@ -443,7 +446,7 @@ if __name__ == "__main__":
 
     # 获取集合统计信息
     stats = vector_db.get_collection_stats()
-    print("集合统计信息:", stats)
+    logger.info("集合统计信息:", stats)
 
     # 搜索相似向量
     query_vector = np.random.rand(128).tolist()
@@ -452,11 +455,11 @@ if __name__ == "__main__":
         top_k=5,
         filter_conditions={"category": "test"},
     )
-    print("搜索结果:", search_results)
+    logger.info("搜索结果:", search_results)
 
     # 获取单个向量
     vector_info = vector_db.get_vector(vector_ids=[0])
-    print("向量信息:", vector_info)
+    logger.info("向量信息:", vector_info)
 
     # 更新向量元数据
     vector_db.update_vector_payload(

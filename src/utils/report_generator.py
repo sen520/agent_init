@@ -3,11 +3,14 @@
 HTML 报告生成器 - 生成可视化的代码分析报告
 """
 import os
+import logging
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any
 from src.state.base import State
 from src.config.manager import get_config
+
+logger = logging.getLogger(__name__)
 
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -423,11 +426,11 @@ def create_report_node(state: State) -> State:
     """
     创建 HTML 报告的节点函数
     """
-    print("📊 [报告] 生成 HTML 分析报告...")
+    logger.info("📊 [报告] 生成 HTML 分析报告...")
     
     try:
         report_path = generate_html_report(state)
-        print(f"   ✅ 报告已生成: {report_path}")
+        logger.info(f"   ✅ 报告已生成: {report_path}")
         state.logs.append(f"HTML报告已生成: {report_path}")
         
         # 同时在 summary 中记录
@@ -436,11 +439,11 @@ def create_report_node(state: State) -> State:
         state.report_files.append(report_path)
         
     except ImportError:
-        print("   ⚠️  缺少 jinja2，无法生成 HTML 报告")
-        print("   💡 运行: pip install jinja2")
+        logger.info("   ⚠️  缺少 jinja2，无法生成 HTML 报告")
+        logger.info("   💡 运行: pip install jinja2")
         state.logs.append("缺少 jinja2，无法生成 HTML 报告")
     except Exception as e:
-        print(f"   ❌ 生成报告失败: {e}")
+        logger.info(f"   ❌ 生成报告失败: {e}")
         state.errors.append(f"生成 HTML 报告失败: {e}")
     
     return state

@@ -2,6 +2,7 @@
 """
 代码优化节点 - 应用具体的代码优化策略
 """
+import logging
 from typing import Dict, List, Any, Optional
 import os
 from pathlib import Path
@@ -10,6 +11,8 @@ import uuid
 
 from src.state.base import State, CodeAnalysis, ImplementationResult
 from src.config.manager import get_config
+
+logger = logging.getLogger(__name__)
 
 
 def apply_optimization(state: State) -> State:
@@ -76,7 +79,7 @@ def apply_optimization(state: State) -> State:
             state.should_continue = False
             return state
         
-        print(f"   🎯 确定 {len(files_to_optimize)} 个文件需要优化")
+        logger.info(f"   🎯 确定 {len(files_to_optimize)} 个文件需要优化")
         
         # 创建优化器
         optimizer = CodeOptimizer()
@@ -135,17 +138,17 @@ def apply_optimization(state: State) -> State:
                                 f"优化 {file_name}: {changes_count} 处变更"
                             )
                             
-                            print(f"      ✅ {file_name}: {changes_count} 处优化已应用")
+                            logger.info(f"      ✅ {file_name}: {changes_count} 处优化已应用")
                             state.logs.append(f"✅ {file_name}: {changes_count} 处优化")
                         else:
-                            print(f"      ⚠️ {file_name}: {apply_result.get('message', '未应用')}")
+                            logger.info(f"      ⚠️ {file_name}: {apply_result.get('message', '未应用')}")
                     else:
-                        print(f"      ℹ️ {file_name}: 无需优化")
+                        logger.info(f"      ℹ️ {file_name}: 无需优化")
                 else:
-                    print(f"      ℹ️ {file_name}: 无需优化")
+                    logger.info(f"      ℹ️ {file_name}: 无需优化")
                     
             except Exception as e:
-                print(f"      ❌ {file_name}: 优化失败 - {e}")
+                logger.info(f"      ❌ {file_name}: 优化失败 - {e}")
                 error_impl = ImplementationResult(
                     suggestion_id=str(uuid.uuid4()),
                     implemented_at=datetime.now(),
@@ -172,7 +175,7 @@ def apply_optimization(state: State) -> State:
             f"优化完成: 处理了 {len(files_to_optimize)} 个文件，"
             f"应用了 {total_changes} 处变更"
         )
-        print(f"\n   📊 优化完成: {total_changes} 处变更已应用到 {len(modifier.modified_files)} 个文件")
+        logger.info(f"\n   📊 优化完成: {total_changes} 处变更已应用到 {len(modifier.modified_files)} 个文件")
         
         # 如果没有任何变更，停止优化
         if total_changes == 0:
@@ -180,7 +183,7 @@ def apply_optimization(state: State) -> State:
             state.stop_reason = "没有可以应用的优化"
         
     except Exception as e:
-        print(f"   ❌ 优化过程出错: {e}")
+        logger.info(f"   ❌ 优化过程出错: {e}")
         error_impl = ImplementationResult(
             suggestion_id=str(uuid.uuid4()),
             implemented_at=datetime.now(),

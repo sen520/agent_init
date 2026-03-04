@@ -2,6 +2,7 @@
 """
 自优化LangGraph工作流 - 实现系统自优化闭环的核心工作流
 """
+import logging
 from langgraph.graph import StateGraph, END
 
 # 导入节点
@@ -15,6 +16,8 @@ from src.nodes.self_optimizing import (
 
 # 导入状态管理
 from src.state.base import State
+
+logger = logging.getLogger(__name__)
 
 
 def build_self_optimizing_workflow():
@@ -65,8 +68,8 @@ if __name__ == "__main__":
     from src.state.base import State
     
     async def test_self_optimizing_workflow():
-        print("🤖 测试自优化工作流")
-        print("=" * 60)
+        logger.info("🤖 测试自优化工作流")
+        logger.info("=" * 60)
         
         try:
             # 创建初始状态 - 设置最大迭代次数以防无限循环
@@ -75,34 +78,34 @@ if __name__ == "__main__":
                 max_iterations=3  # 限制自优化轮数
             )
             
-            print("🚀 启动自优化工作流...")
+            logger.info("🚀 启动自优化工作流...")
             
             # 运行工作流
             result_dict = await self_optimizing_app.ainvoke(initial_state)
             final_state = State(**result_dict)
             
             # 显示结果
-            print("✅ 自优化工作流完成")
-            print(f"   总轮数: {len(final_state.optimization_rounds)}")
-            print(f"   分析文件: {final_state.total_files_analyzed}")
-            print(f"   发现问题: {final_state.total_issues_found}")
-            print(f"   应用优化: {final_state.total_optimizations_applied}")
-            print(f"   使用策略: {', '.join(final_state.strategies_used) if final_state.strategies_used else '无'}")
-            print(f"   优化成功: {'✅' if final_state.optimization_success else '❌'}")
+            logger.info("✅ 自优化工作流完成")
+            logger.info(f"   总轮数: {len(final_state.optimization_rounds)}")
+            logger.info(f"   分析文件: {final_state.total_files_analyzed}")
+            logger.info(f"   发现问题: {final_state.total_issues_found}")
+            logger.info(f"   应用优化: {final_state.total_optimizations_applied}")
+            logger.info(f"   使用策略: {', '.join(final_state.strategies_used) if final_state.strategies_used else '无'}")
+            logger.info(f"   优化成功: {'✅' if final_state.optimization_success else '❌'}")
             
             # 显示关键日志
-            print("\n📋 执行摘要:")
+            logger.info("\n📋 执行摘要:")
             for log in final_state.logs[-8:]:
-                print(f"   • {log}")
+                logger.info(f"   • {log}")
             
             # 显示报告文件
             if hasattr(final_state, 'report_file'):
-                print(f"\n📄 详细报告: {final_state.report_file}")
+                logger.info(f"\n📄 详细报告: {final_state.report_file}")
             
             return final_state
             
         except Exception as e:
-            print(f"❌ 自优化工作流失败: {e}")
+            logger.info(f"❌ 自优化工作流失败: {e}")
             import traceback
             traceback.print_exc()
             return None
@@ -111,8 +114,8 @@ if __name__ == "__main__":
     result = asyncio.run(test_self_optimizing_workflow())
     
     if result and result.optimization_success:
-        print("\n🎉 自优化系统成功运行！")
+        logger.info("\n🎉 自优化系统成功运行！")
     elif result:
-        print("\n🤔 自优化系统运行完成，但有一些问题")
+        logger.info("\n🤔 自优化系统运行完成，但有一些问题")
     else:
-        print("\n😞 自优化系统遇到问题")
+        logger.info("\n😞 自优化系统遇到问题")

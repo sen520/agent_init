@@ -5,8 +5,11 @@
 import ast
 import os
 import re
+import logging
 from typing import Dict, List, Any, Optional
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class SimpleCodeAnalyzer:
@@ -262,42 +265,42 @@ def analyze_dir(dir_path: str) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     # 测试代码分析器
-    print("🧪 简化代码分析器测试")
-    print("=" * 60)
+    logger.info("🧪 简化代码分析器测试")
+    logger.info("=" * 60)
     
     try:
         # 测试当前文件
         result = analyze_file(__file__)
         
-        print(f"📄 分析文件: {result['file_name']}")
-        print(f"📊 总行数: {result['total_lines']}")
-        print(f"📝 非空行: {result['non_empty_lines']}")
+        logger.info(f"📄 分析文件: {result['file_name']}")
+        logger.info(f"📊 总行数: {result['total_lines']}")
+        logger.info(f"📝 非空行: {result['non_empty_lines']}")
         
         issues = result.get('issues', [])
-        print(f"🔍 发现问题: {len(issues)} 个")
+        logger.info(f"🔍 发现问题: {len(issues)} 个")
         
         if issues:
-            print("\n具体问题:")
+            logger.info("\n具体问题:")
             for issue in issues[:10]:  # 只显示前10个
                 line = issue.get('line', '?')
                 message = issue.get('message', '')
                 severity = issue.get('severity', 'info')
-                print(f"  L{line}: {message} [{severity}]")
+                logger.info(f"  L{line}: {message} [{severity}]")
         else:
-            print("\n✅ 没有发现问题")
+            logger.info("\n✅ 没有发现问题")
         
         # 测试目录分析
-        print("\n📁 测试目录分析...")
+        logger.info("\n📁 测试目录分析...")
         dir_result = analyze_dir('.')
-        print(f"找到 {dir_result['file_count']} 个Python文件")
-        print(f"总问题数: {dir_result['total_issues']}")
+        logger.info(f"找到 {dir_result['file_count']} 个Python文件")
+        logger.info(f"总问题数: {dir_result['total_issues']}")
         
         if dir_result['top_issue_types']:
-            print("\n最常见的问题类型:")
+            logger.info("\n最常见的问题类型:")
             for item in dir_result['top_issue_types'][:5]:
-                print(f"  {item['type']}: {item['count']} 次")
+                logger.info(f"  {item['type']}: {item['count']} 次")
                 
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
+        logger.info(f"❌ 测试失败: {e}")
         import traceback
         traceback.print_exc()

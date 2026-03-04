@@ -150,8 +150,8 @@ def setup_colored_logging(level: str = 'INFO'):
 
 if __name__ == "__main__":
     # 测试日志配置
-    print("📝 日志系统测试")
-    print("=" * 50)
+    logger.info("📝 日志系统测试")
+    logger.info("=" * 50)
     
     # 设置日志
     setup_colored_logging('DEBUG')
@@ -163,4 +163,4 @@ if __name__ == "__main__":
     logger.warning("这是 WARNING 消息")
     logger.error("这是 ERROR 消息")
     
-    print("\n✅ 日志系统测试完成")
+    logger.info("\n✅ 日志系统测试完成")

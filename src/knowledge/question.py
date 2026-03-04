@@ -58,4 +58,4 @@ source \~/my_ws/devel/setup.bash
 1）显示图像
 
 启动相机命令:''', prompt)
-    print(text)
+    logger.info(text)
