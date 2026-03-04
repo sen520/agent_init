@@ -43,7 +43,7 @@ class MyClass:
         assert 'imports' in result
         assert 'functions' in result
         assert 'classes' in result
-        assert 'complexity' in result
+        assert 'cyclomatic_complexity' in result
     
     def test_analyze_nonexistent_file(self):
         """测试分析不存在的文件"""

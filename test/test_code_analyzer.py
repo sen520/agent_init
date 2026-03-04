@@ -259,8 +259,8 @@ class Bar:
         
         metrics = analyzer._get_ast_metrics(tree)
         
-        assert 'functions' in metrics
-        assert 'classes' in metrics
+        assert 'function_count' in metrics
+        assert 'class_count' in metrics
     
     def test_check_ast_security(self):
         """测试 AST 安全检查"""

@@ -60,18 +60,24 @@ class FileModifier:
             (成功, 消息)
         """
         try:
-            # 1. 如果是 Python 文件，验证语法
+            # 1. 检查内容是否有变化
+            if Path(file_path).exists():
+                current_content = Path(file_path).read_text(encoding='utf-8')
+                if current_content == content:
+                    return True, "无需修改"
+            
+            # 2. 如果是 Python 文件，验证语法
             if file_path.endswith('.py'):
                 try:
                     ast.parse(content)
                 except SyntaxError as e:
                     return False, f"语法错误: {e}"
             
-            # 2. 创建备份
+            # 3. 创建备份
             if create_backup:
                 backup_path = self.backup_file(file_path)
             
-            # 3. 写入文件
+            # 4. 写入文件
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
