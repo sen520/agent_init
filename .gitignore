@@ -173,10 +173,19 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 
-# 自定义忽略
-test_*.py.backup
-demo_target.py.backup
-temp_*.py
+# 个人信息文件
+USER.md
+
+# 临时/调试脚本
+debug_*.py
+demo_*.py
+final_*.py
+fix_*.py
+run_*.py
+step_by_step.py
+quick_*_demo.py
+health_report.*
+SECURITY_CHECKLIST.md
 
 # 优化备份目录
 .optimization_backups/
