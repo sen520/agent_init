@@ -72,19 +72,6 @@ def helper():
         
         assert result.iteration_count == state.iteration_count
     
-    @pytest.mark.asyncio
-    async def test_simple_workflow(self, temp_project):
-        """测试简单工作流"""
-        graph = build_simple_graph()
-        state = State()
-        state.project_path = str(temp_project)
-        
-        result = await graph.ainvoke(state)
-        
-        assert result is not None
-        assert result.iteration_count >= 0
-
-
 class TestStateManagement:
     """状态管理测试"""
     

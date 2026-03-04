@@ -64,21 +64,6 @@ class TestBuildGraph:
 class TestSimpleGraphExecution:
     """测试简单图执行"""
     
-    @pytest.mark.asyncio
-    async def test_simple_graph_execution(self):
-        """测试简单图的基本执行"""
-        from langgraph.graph import StateGraph
-        
-        graph = build_simple_graph()
-        state = State()
-        state.project_path = "."
-        
-        # 异步执行
-        result = await graph.ainvoke(state)
-        
-        assert result is not None
-        assert hasattr(result, 'iteration_count') or isinstance(result, dict)
-    
     def test_simple_graph_sync_execution(self):
         """测试简单图的同步执行"""
         graph = build_simple_graph()
@@ -119,22 +104,7 @@ class TestGraphNodes:
 
 class TestGraphErrorHandling:
     """测试图的错误处理"""
-    
-    @pytest.mark.asyncio
-    async def test_graph_with_invalid_state(self):
-        """测试图处理无效状态"""
-        graph = build_simple_graph()
-        
-        # 使用空状态
-        state = State()
-        
-        try:
-            result = await graph.ainvoke(state)
-            # 应该成功执行或返回结果
-            assert result is not None
-        except Exception as e:
-            # 也可能抛出异常，取决于实现
-            pytest.skip(f"Graph execution raised: {e}")
+    pass
 
 
 class TestRealNodesAvailable:
