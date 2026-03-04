@@ -1,5 +1,8 @@
+import logging
 from typing import Dict, Any
 from src.state.base import State
+
+logger = logging.getLogger(__name__)
 
 
 # ========================
@@ -7,11 +10,11 @@ from src.state.base import State
 # ========================
 def initialize_project(state: State) -> State:
     """初始化项目分析"""
-    print("🔄 [节点1] 初始化项目")
+    logger.info("🔄 [节点1] 初始化项目")
     state.project_path = "/root/.openclaw/workspace/code"
     state.iteration_count += 1
-    print(f"   项目路径: {state.project_path}")
-    print(f"   当前迭代: {state.iteration_count}")
+    logger.info(f"   项目路径: {state.project_path}")
+    logger.info(f"   当前迭代: {state.iteration_count}")
     return state
 
 
@@ -20,7 +23,7 @@ def initialize_project(state: State) -> State:
 # ========================
 def analyze_code(state: State) -> State:
     """分析代码结构和质量"""
-    print("🔍 [节点2] 分析代码")
+    logger.info("🔍 [节点2] 分析代码")
     
     # 模拟分析结果 - 修正字段名
     state.analysis.total_files_analyzed = 25  # 模拟文件数量
@@ -35,9 +38,9 @@ def analyze_code(state: State) -> State:
         "某些模块耦合度较高"
     ]
     
-    print(f"   发现 {len(state.analysis.issues)} 个潜在问题")
+    logger.info(f"   发现 {len(state.analysis.issues)} 个潜在问题")
     for i, issue in enumerate(state.analysis.issues, 1):
-        print(f"     {i}. {issue}")
+        logger.info(f"     {i}. {issue}")
     
     return state
 
@@ -47,7 +50,7 @@ def analyze_code(state: State) -> State:
 # ========================
 def plan_optimizations(state: State) -> State:
     """基于分析结果生成优化计划"""
-    print("📋 [节点3] 生成优化计划")
+    logger.info("📋 [节点3] 生成优化计划")
     
     # 基于问题生成建议
     suggestions = []
@@ -73,9 +76,9 @@ def plan_optimizations(state: State) -> State:
         "complexity": -0.2  # 复杂度降低预期
     }
     
-    print(f"   生成 {len(suggestions)} 个优化建议：")
+    logger.info(f"   生成 {len(suggestions)} 个优化建议：")
     for i, (suggestion, priority) in enumerate(zip(suggestions, priorities), 1):
-        print(f"     {i}. [{priority}] {suggestion}")
+        logger.info(f"     {i}. [{priority}] {suggestion}")
     
     return state
 
@@ -85,7 +88,7 @@ def plan_optimizations(state: State) -> State:
 # ========================
 def create_analysis_report(state: State) -> State:
     """创建初步的分析报告"""
-    print("📋 [节点3] 创建分析报告")
+    logger.info("📋 [节点3] 创建分析报告")
     
     # 生成基本分析报告
     report = {
@@ -98,7 +101,7 @@ def create_analysis_report(state: State) -> State:
     }
     
     state.analysis_reports.append(report)
-    print(f"   分析报告已生成，包含 {len(state.analysis.issues)} 个问题")
+    logger.info(f"   分析报告已生成，包含 {len(state.analysis.issues)} 个问题")
     return state
 
 
@@ -107,7 +110,7 @@ def create_analysis_report(state: State) -> State:
 # ========================
 def apply_changes(state: State) -> State:
     """应用优化变更"""
-    print("🛠️  [节点4] 应用变更")
+    logger.info("🛠️  [节点4] 应用变更")
     
     applied = []
     if state.plan.suggestions:
@@ -127,10 +130,10 @@ def apply_changes(state: State) -> State:
     state.applied_changes = applied
     
     if applied:
-        print(f"   已应用变更: {applied[0]}")
-        print(f"   剩余问题: {len(state.analysis.issues)} 个")
+        logger.info(f"   已应用变更: {applied[0]}")
+        logger.info(f"   剩余问题: {len(state.analysis.issues)} 个")
     else:
-        print("   没有需要应用的变更")
+        logger.info("   没有需要应用的变更")
     
     return state
 
@@ -140,7 +143,7 @@ def apply_changes(state: State) -> State:
 # ========================
 def verify_changes(state: State) -> State:
     """验证应用的变更"""
-    print("✅ [节点5] 验证变更")
+    logger.info("✅ [节点5] 验证变更")
     
     if state.applied_changes:
         # 模拟验证结果
@@ -149,14 +152,14 @@ def verify_changes(state: State) -> State:
             "functionality_preserved": True,
             "no_syntax_errors": True
         }
-        print("   验证结果: 所有测试通过，功能保持完整")
+        logger.info("   验证结果: 所有测试通过，功能保持完整")
     else:
         state.verification_results = {
             "tests_passed": True,  # 没有变更，测试依然通过
             "functionality_preserved": True,
             "no_syntax_errors": True
         }
-        print("   验证结果: 没有变更需要验证")
+        logger.info("   验证结果: 没有变更需要验证")
     
     return state
 
@@ -182,13 +185,13 @@ def evaluate_results(state: State) -> State:
     remaining_issues = len(state.analysis.issues)
     if remaining_issues > 0 and state.iteration_count < 3:  # 最多迭代3次
         state.should_continue = True
-        print(f"   仍有 {remaining_issues} 个问题待处理，继续优化")
+        logger.info(f"   仍有 {remaining_issues} 个问题待处理，继续优化")
     else:
         state.should_continue = False
-        print(f"   优化完成，共 {state.iteration_count} 次迭代")
+        logger.info(f"   优化完成，共 {state.iteration_count} 次迭代")
     
     if improvements:
-        print(f"   改进成果: {', '.join(improvements)}")
+        logger.info(f"   改进成果: {', '.join(improvements)}")
     
     return state
 
@@ -198,26 +201,26 @@ def evaluate_results(state: State) -> State:
 # ========================
 def end_optimization(state: State) -> State:
     """结束优化流程"""
-    print("🏁 [节点7] 结束优化")
+    logger.info("🏁 [节点7] 结束优化")
     
     total_improvements = len(state.applied_changes)
     remaining_issues = len(state.analysis.issues)
     
-    print("=" * 50)
-    print("优化总结报告:")
-    print(f"  迭代次数: {state.iteration_count}")
-    print(f"  应用优化: {total_improvements} 项")
-    print(f"  剩余问题: {remaining_issues} 个")
+    logger.info("=" * 50)
+    logger.info("优化总结报告:")
+    logger.info(f"  迭代次数: {state.iteration_count}")
+    logger.info(f"  应用优化: {total_improvements} 项")
+    logger.info(f"  剩余问题: {remaining_issues} 个")
     
     if total_improvements > 0:
-        print("应用的具体优化:")
+        logger.info("应用的具体优化:")
         for i, change in enumerate(state.applied_changes, 1):
-            print(f"  {i}. {change}")
+            logger.info(f"  {i}. {change}")
     
     if remaining_issues > 0:
-        print("未解决的问题:")
+        logger.info("未解决的问题:")
         for i, issue in enumerate(state.analysis.issues, 1):
-            print(f"  {i}. {issue}")
+            logger.info(f"  {i}. {issue}")
     
-    print("=" * 50)
+    logger.info("=" * 50)
     return state

@@ -2,7 +2,10 @@
 """
 LangGraph工作流定义 - 代码优化助手的核心引擎
 """
+import logging
 from langgraph.graph import StateGraph, END
+
+logger = logging.getLogger(__name__)
 
 # 导入节点函数
 try:
@@ -15,7 +18,7 @@ try:
     )
     REAL_NODES_AVAILABLE = True
 except ImportError as e:
-    print(f"真实分析节点不可用，使用模拟节点: {e}")
+    logger.warning(f"真实分析节点不可用，使用模拟节点: {e}")
     from src.nodes.base import (
         initialize_project,
         analyze_code,
@@ -33,7 +36,7 @@ try:
     )
     OPTIMIZATION_NODES_AVAILABLE = True
 except ImportError as e:
-    print(f"导入优化节点失败: {e}")
+    logger.info(f"导入优化节点失败: {e}")
     OPTIMIZATION_NODES_AVAILABLE = False
 
 # 导入状态管理
@@ -199,7 +202,7 @@ def build_phase2_graph():
         builder.add_node("llm_report", generate_llm_report)
         has_phase2 = True
     except ImportError as e:
-        print(f"Phase 2 节点不可用: {e}")
+        logger.info(f"Phase 2 节点不可用: {e}")
         has_phase2 = False
     
     # 设置入口点
@@ -258,30 +261,30 @@ if __name__ == "__main__":
     from src.state.base import State
     
     # 测试简单工作流
-    print("🧪 测试LangGraph工作流")
-    print("=" * 60)
+    logger.info("🧪 测试LangGraph工作流")
+    logger.info("=" * 60)
     
     async def test_workflow(workflow_name, app, initial_state):
-        print(f"\n🔄 测试 {workflow_name}:")
+        logger.info(f"\n🔄 测试 {workflow_name}:")
         try:
             result_dict = await app.ainvoke(initial_state)
             final_state = State(**result_dict)
             
-            print(f"✅ {workflow_name} 完成")
-            print(f"   迭代次数: {final_state.iteration_count}")
-            print(f"   日志数量: {len(final_state.logs)}")
-            print(f"   错误数量: {len(final_state.errors)}")
+            logger.info(f"✅ {workflow_name} 完成")
+            logger.info(f"   迭代次数: {final_state.iteration_count}")
+            logger.info(f"   日志数量: {len(final_state.logs)}")
+            logger.info(f"   错误数量: {len(final_state.errors)}")
             
             # 显示最后几条日志
             if final_state.logs:
-                print("   最近日志:")
+                logger.info("   最近日志:")
                 for log in final_state.logs[-3:]:
-                    print(f"     {log}")
+                    logger.info(f"     {log}")
                     
             return final_state
             
         except Exception as e:
-            print(f"❌ {workflow_name} 失败: {e}")
+            logger.info(f"❌ {workflow_name} 失败: {e}")
             return None
     
     # 运行测试
@@ -300,16 +303,16 @@ if __name__ == "__main__":
             initial_state3 = State(project_path=".")
             result3 = await test_workflow("自优化工作流", self_optimizing_app, initial_state3)
         else:
-            print("⚠️ 优化节点不可用，跳过优化工作流测试")
+            logger.info("⚠️ 优化节点不可用，跳过优化工作流测试")
     
     asyncio.run(run_tests())
     
-    print("\n✅ 工作流测试完成")
-    print(f"📊 可用的工作流:")
-    print(f"   - 简单工作流 (�)")
+    logger.info("\n✅ 工作流测试完成")
+    logger.info(f"📊 可用的工作流:")
+    logger.info(f"   - 简单工作流 (�)")
     if OPTIMIZATION_NODES_AVAILABLE:
-        print(f"   - 优化工作流 (�)")
-        print(f"   - 自优化工作流 (�)")
+        logger.info(f"   - 优化工作流 (�)")
+        logger.info(f"   - 自优化工作流 (�)")
     else:
-        print(f"   - 优化工作流 (❌ - 节点不可用)")
-        print(f"   - 自优化工作流 (❌ - 节点不可用)")
+        logger.info(f"   - 优化工作流 (❌ - 节点不可用)")
+        logger.info(f"   - 自优化工作流 (❌ - 节点不可用)")
