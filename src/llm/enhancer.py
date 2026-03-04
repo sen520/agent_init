@@ -107,12 +107,18 @@ class LLMEnhancer:
             return "✅ 代码没有发现明显问题"
         
         # 构建提示
+        prompt = self._build_analysis_prompt(code, issues)
+        
+        return self._call_llm_for_analysis(prompt, len(issues))
+    
+    def _build_analysis_prompt(self, code: str, issues: List[Dict]) -> str:
+        """构建代码分析提示"""
         issues_text = "\n".join([
             f"- [{i.get('severity', 'medium')}] {i.get('type', 'unknown')}: {i.get('description', '')}"
             for i in issues[:10]  # 最多10个问题
         ])
         
-        prompt = f"""请分析以下 Python 代码，针对发现的问题提供具体的改进建议：
+        return f"""请分析以下 Python 代码，针对发现的问题提供具体的改进建议：
 
 ## 代码
 ```python
@@ -128,9 +134,11 @@ class LLMEnhancer:
 3. 如果有复杂问题，提供重构思路
 
 请用中文回答，简洁明了。"""
-
+    
+    def _call_llm_for_analysis(self, prompt: str, issue_count: int) -> str:
+        """调用 LLM 进行分析"""
         try:
-            logger.info(f"发送 LLM 请求分析 {len(issues)} 个问题")
+            logger.info(f"发送 LLM 请求分析 {issue_count} 个问题")
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
