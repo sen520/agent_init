@@ -2,6 +2,7 @@
 """
 真实的代码分析节点 - 替换模拟数据
 """
+import logging
 from typing import Dict, Any
 from pathlib import Path
 import os
@@ -11,10 +12,12 @@ from src.tools.file_scanner import FileScanner
 from src.tools.code_analyzer import CodeAnalyzer
 from src.config.manager import get_config
 
+logger = logging.getLogger(__name__)
+
 
 def initialize_project(state: State) -> State:
     """初始化项目分析 - 使用实际项目路径"""
-    print("🔄 [节点1] 初始化项目")
+    logger.info("🔄 [节点1] 初始化项目")
     
     # 使用当前目录或传入的路径
     if not state.project_path:
@@ -27,19 +30,19 @@ def initialize_project(state: State) -> State:
         agent_init_path = Path(__file__).parent.parent.parent.parent
         if agent_init_path.exists():
             state.project_path = str(agent_init_path)
-            print(f"   ⚠️  指定路径不存在，使用默认路径: {state.project_path}")
+            logger.warning(f"   ⚠️  指定路径不存在，使用默认路径: {state.project_path}")
         else:
             state.project_path = os.getcwd()
     
     state.iteration_count += 1
-    print(f"   项目路径: {state.project_path}")
-    print(f"   当前迭代: {state.iteration_count}")
+    logger.info(f"   项目路径: {state.project_path}")
+    logger.info(f"   当前迭代: {state.iteration_count}")
     return state
 
 
 def analyze_code(state: State) -> State:
     """真实代码分析 - 使用 CodeAnalyzer 分析实际文件"""
-    print("🔍 [节点2] 分析代码")
+    logger.info("🔍 [节点2] 分析代码")
     
     # 加载配置
     config = get_config()
@@ -54,11 +57,11 @@ def analyze_code(state: State) -> State:
         python_files = scanner.scan_python_files()
         
         if not python_files:
-            print("   ⚠️  未找到 Python 文件")
+            logger.warning("   ⚠️  未找到 Python 文件")
             state.analysis.total_files_analyzed = 0
             return state
         
-        print(f"   发现 {len(python_files)} 个 Python 文件")
+        logger.info(f"   发现 {len(python_files)} 个 Python 文件")
         
         # 分析每个文件
         all_issues = []
@@ -96,10 +99,10 @@ def analyze_code(state: State) -> State:
                 
                 # 显示进度
                 if len(all_issues) <= 5:
-                    print(f"   📄 {file_path}: {len(file_issues)} 个问题")
+                    logger.info(f"   📄 {file_path}: {len(file_issues)} 个问题")
                     
             except Exception as e:
-                print(f"   ❌ 分析失败 {file_path}: {e}")
+                logger.error(f"   ❌ 分析失败 {file_path}: {e}")
         
         # 更新状态
         state.analysis.total_files_analyzed = len(files_to_analyze)
@@ -115,18 +118,18 @@ def analyze_code(state: State) -> State:
             issue_summary[issue_type] = issue_summary.get(issue_type, 0) + 1
         state.analysis.issue_summary = issue_summary
         
-        print(f"\n   📊 分析完成:")
-        print(f"      文件数: {len(files_to_analyze)}")
-        print(f"      总行数: {total_lines}")
-        print(f"      发现 {len(all_issues)} 个问题（{files_with_issues} 个文件）")
+        logger.info(f"\n   📊 分析完成:")
+        logger.info(f"      文件数: {len(files_to_analyze)}")
+        logger.info(f"      总行数: {total_lines}")
+        logger.info(f"      发现 {len(all_issues)} 个问题（{files_with_issues} 个文件）")
         
         if issue_summary:
-            print(f"\n   📋 问题分类:")
+            logger.info(f"\n   📋 问题分类:")
             for issue_type, count in sorted(issue_summary.items(), key=lambda x: -x[1])[:5]:
-                print(f"      - {issue_type}: {count}")
+                logger.info(f"      - {issue_type}: {count}")
         
     except Exception as e:
-        print(f"   ❌ 分析过程出错: {e}")
+        logger.error(f"   ❌ 分析过程出错: {e}")
         state.errors.append(f"代码分析失败: {e}")
     
     return state
@@ -134,7 +137,7 @@ def analyze_code(state: State) -> State:
 
 def create_analysis_report(state: State) -> State:
     """创建真实的分析报告"""
-    print("📋 [节点3] 创建分析报告")
+    logger.info("📋 [节点3] 创建分析报告")
     
     report = {
         "project_path": state.project_path,
@@ -165,46 +168,46 @@ def create_analysis_report(state: State) -> State:
     
     state.analysis_reports.append(report)
     
-    print(f"   分析报告已生成:")
-    print(f"      - 分析文件: {report['files_analyzed']}")
-    print(f"      - 发现问题: {report['issues_found']}")
-    print(f"      - 平均复杂度: {report['average_complexity']}")
+    logger.info(f"   分析报告已生成:")
+    logger.info(f"      - 分析文件: {report['files_analyzed']}")
+    logger.info(f"      - 发现问题: {report['issues_found']}")
+    logger.info(f"      - 平均复杂度: {report['average_complexity']}")
     
     if report["top_issues"]:
-        print(f"\n   🔴 前 {len(report['top_issues'])} 个问题:")
+        logger.info(f"\n   🔴 前 {len(report['top_issues'])} 个问题:")
         for i, issue in enumerate(report["top_issues"][:5], 1):
-            print(f"      {i}. [{issue['severity'].upper()}] {issue['file']}:{issue['line']}")
-            print(f"         {issue['description']}")
+            logger.info(f"      {i}. [{issue['severity'].upper()}] {issue['file']}:{issue['line']}")
+            logger.info(f"         {issue['description']}")
     
     return state
 
 
 def end_optimization(state: State) -> State:
     """结束优化流程 - 生成最终总结"""
-    print("🏁 [节点7] 结束优化")
+    logger.info("🏁 [节点7] 结束优化")
     
     total_issues = len(state.analysis.issues)
     fixed_issues = len(state.applied_changes)
     
-    print("=" * 60)
-    print("优化总结报告:")
-    print(f"  迭代次数: {state.iteration_count}")
-    print(f"  分析文件: {state.analysis.total_files_analyzed}")
-    print(f"  代码行数: {state.analysis.total_lines_of_code}")
-    print(f"  发现问题: {total_issues}")
-    print(f"  应用优化: {fixed_issues}")
+    logger.info("=" * 60)
+    logger.info("优化总结报告:")
+    logger.info(f"  迭代次数: {state.iteration_count}")
+    logger.info(f"  分析文件: {state.analysis.total_files_analyzed}")
+    logger.info(f"  代码行数: {state.analysis.total_lines_of_code}")
+    logger.info(f"  发现问题: {total_issues}")
+    logger.info(f"  应用优化: {fixed_issues}")
     
     if state.stop_reason:
-        print(f"  停止原因: {state.stop_reason}")
+        logger.info(f"  停止原因: {state.stop_reason}")
     
     if state.analysis.issue_summary:
-        print("\n  问题统计:")
+        logger.info("\n  问题统计:")
         for issue_type, count in sorted(state.analysis.issue_summary.items(), key=lambda x: -x[1]):
-            print(f"    - {issue_type}: {count}")
+            logger.info(f"    - {issue_type}: {count}")
     
     if total_issues > 0 and fixed_issues == 0:
-        print("\n  💡 提示: 发现问题但未应用优化")
-        print("     运行 'python main.py full' 进行完整优化")
+        logger.info("\n  💡 提示: 发现问题但未应用优化")
+        logger.info("     运行 'python main.py full' 进行完整优化")
     
-    print("=" * 60)
+    logger.info("=" * 60)
     return state
