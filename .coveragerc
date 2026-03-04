@@ -1,0 +1,27 @@
+[run]
+source = src
+# 排除未使用的模块
+omit = 
+    src/knowledge/*
+    src/utils/vector_db.py
+    src/utils/sqlite_db.py
+    src/utils/performance.py
+    src/utils/config.py
+    src/utils/customModel.py
+    src/utils/logger.py
+    src/utils/office_to_pdf.py
+    src/tools/simple_analyzer.py
+    src/tools/json_generator.py
+    src/nodes/base.py
+    src/graph/self_optimizing.py
+    src/demo_target.py
+    src/orchestrator.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
