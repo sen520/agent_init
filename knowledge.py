@@ -25,7 +25,7 @@ pdf_suffixes = ['.pdf']
 office_suffixes = ['.ppt', '.pptx', '.doc', '.docx', 'xls', 'xlsx']
 image_suffixes = ['.png', '.jpeg', '.jpg']
 compress = ['.zip']
-logger = create_logger()
+logger = create_logger('knowledge')
 
 
 def parse(pdf_files_dir, output_dir):
